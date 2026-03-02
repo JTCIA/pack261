@@ -1,0 +1,142 @@
+---
+import AdminLayout from '../../../../layouts/AdminLayout.astro';
+import { getFile, putFile, buildAnnouncementMd, parseFrontMatter } from '../../../../lib/github.ts';
+
+export const prerender = false;
+
+const { slug } = Astro.params as { slug: string };
+const filePath = `src/content/announcements/${slug}.md`;
+
+let error = '';
+let sha = '';
+
+// Fetch current file from GitHub
+const file = await getFile(filePath);
+if (!file) {
+  return Astro.redirect('/admin/announcements');
+}
+sha = file.sha;
+
+const { fm, body: existingBody } = parseFrontMatter(file.content);
+
+// Prefill values (from POST on error, or from GitHub file)
+let fields = {
+  title:    String(fm.title    ?? ''),
+  date:     String(fm.date     ?? ''),
+  category: String(fm.category ?? 'news'),
+  pinned:   Boolean(fm.pinned),
+  summary:  String(fm.summary  ?? ''),
+  author:   String(fm.author   ?? 'Pack 261 Leadership'),
+  body:     existingBody,
+};
+
+if (Astro.request.method === 'POST') {
+  const form = await Astro.request.formData();
+  fields = {
+    title:    (form.get('title')    as string ?? '').trim(),
+    date:     (form.get('date')     as string ?? fields.date),
+    category: (form.get('category') as string ?? 'news'),
+    pinned:   form.get('pinned') === 'on',
+    summary:  (form.get('summary')  as string ?? '').trim(),
+    author:   (form.get('author')   as string ?? 'Pack 261 Leadership').trim(),
+    body:     (form.get('body')     as string ?? '').trim(),
+  };
+  const currentSha = form.get('sha') as string;
+
+  if (!fields.title || !fields.summary || !fields.body) {
+    error = 'Title, summary, and body are required.';
+  } else {
+    const content = buildAnnouncementMd(fields);
+    const result = await putFile(filePath, content, `Update announcement: ${fields.title}`, currentSha);
+    if (result.ok) {
+      return Astro.redirect('/admin/announcements?saved=updated');
+    }
+    error = `Could not save: ${result.error ?? 'GitHub API error'}.`;
+  }
+}
+---
+
+<AdminLayout title={`Edit: ${fields.title}`} activeSection="announcements">
+
+  <nav class="flex items-center gap-1 text-sm text-gray-400 mb-6">
+    <a href="/admin/announcements" class="hover:text-scout-blue transition-colors">Announcements</a>
+    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+    </svg>
+    <span class="text-gray-700 font-medium">Edit</span>
+  </nav>
+
+  {error && (
+    <div class="mb-5 px-4 py-3 bg-red-50 border border-red-200 text-red-800 rounded-lg text-sm flex items-start gap-2">
+      <svg class="w-4 h-4 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+      </svg>
+      {error}
+    </div>
+  )}
+
+  <form method="post" class="space-y-5 max-w-2xl">
+    <input type="hidden" name="sha" value={sha} />
+
+    <div class="grid sm:grid-cols-2 gap-4">
+      <div class="sm:col-span-2">
+        <label class="block text-sm font-medium text-gray-700 mb-1">Title <span class="text-red-400">*</span></label>
+        <input type="text" name="title" required value={fields.title}
+          class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-scout-blue" />
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Date <span class="text-red-400">*</span></label>
+        <input type="date" name="date" required value={fields.date}
+          class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-scout-blue" />
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Category <span class="text-red-400">*</span></label>
+        <select name="category"
+          class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-scout-blue">
+          {['news', 'event', 'fundraiser', 'achievement', 'reminder'].map((cat) => (
+            <option value={cat} selected={cat === fields.category}>{cat.charAt(0).toUpperCase() + cat.slice(1)}</option>
+          ))}
+        </select>
+      </div>
+
+      <div class="sm:col-span-2">
+        <label class="block text-sm font-medium text-gray-700 mb-1">Summary <span class="text-red-400">*</span></label>
+        <input type="text" name="summary" required maxlength="200" value={fields.summary}
+          class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-scout-blue" />
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Author</label>
+        <input type="text" name="author" value={fields.author}
+          class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-scout-blue" />
+      </div>
+
+      <div class="flex items-end pb-2">
+        <label class="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
+          <input type="checkbox" name="pinned" checked={fields.pinned}
+            class="w-4 h-4 rounded border-gray-300 text-scout-blue focus:ring-scout-blue" />
+          Pin to top of announcements list
+        </label>
+      </div>
+    </div>
+
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-1">Body <span class="text-red-400">*</span></label>
+      <p class="text-xs text-gray-500 mb-1.5">Supports markdown: **bold**, *italic*, ## Heading, - lists, [link](url)</p>
+      <textarea name="body" required rows="14"
+        class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-scout-blue resize-y"
+      >{fields.body}</textarea>
+    </div>
+
+    <div class="flex items-center gap-3 pt-1">
+      <button type="submit"
+        class="bg-scout-blue text-white px-5 py-2 rounded-lg text-sm font-semibold hover:bg-scout-blue-mid transition-colors">
+        Save Changes
+      </button>
+      <a href="/admin/announcements" class="text-sm text-gray-500 hover:text-gray-700 transition-colors">Cancel</a>
+    </div>
+  </form>
+
+</AdminLayout>

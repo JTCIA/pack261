@@ -1,0 +1,134 @@
+---
+import AdminLayout from '../../../../layouts/AdminLayout.astro';
+import { getFile, putFile, buildDocMd, parseFrontMatter } from '../../../../lib/github.ts';
+
+export const prerender = false;
+
+const { slug } = Astro.params as { slug: string };
+// Docs live at src/content/docs/<slug>/index.md
+const filePath = `src/content/docs/${slug}/index.md`;
+
+let error = '';
+let sha = '';
+
+const file = await getFile(filePath);
+if (!file) {
+  return Astro.redirect('/admin/docs');
+}
+sha = file.sha;
+
+const { fm, body: existingBody } = parseFrontMatter(file.content);
+const today = new Date().toISOString().split('T')[0];
+
+let fields = {
+  title:       String(fm.title       ?? ''),
+  description: String(fm.description ?? ''),
+  section:     String(fm.section     ?? ''),
+  order:       Number(fm.order       ?? 99),
+  lastUpdated: String(fm.lastUpdated ?? today),
+  body:        existingBody,
+};
+
+if (Astro.request.method === 'POST') {
+  const form = await Astro.request.formData();
+  fields = {
+    title:       (form.get('title')       as string ?? '').trim(),
+    description: (form.get('description') as string ?? '').trim(),
+    section:     (form.get('section')     as string ?? '').trim(),
+    order:       parseInt(form.get('order') as string ?? '99', 10),
+    lastUpdated: (form.get('lastUpdated') as string ?? today),
+    body:        (form.get('body')        as string ?? '').trim(),
+  };
+  const currentSha = form.get('sha') as string;
+
+  if (!fields.title || !fields.section || !fields.body) {
+    error = 'Title, section, and body are required.';
+  } else {
+    const content = buildDocMd(fields);
+    const result = await putFile(filePath, content, `Update doc: ${fields.title}`, currentSha);
+    if (result.ok) {
+      return Astro.redirect('/admin/docs?saved=updated');
+    }
+    error = `Could not save: ${result.error ?? 'GitHub API error'}.`;
+  }
+}
+---
+
+<AdminLayout title={`Edit: ${fields.title}`} activeSection="docs">
+
+  <nav class="flex items-center gap-1 text-sm text-gray-400 mb-6">
+    <a href="/admin/docs" class="hover:text-scout-blue transition-colors">Documentation</a>
+    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+    </svg>
+    <span class="text-gray-700 font-medium">Edit</span>
+  </nav>
+
+  {error && (
+    <div class="mb-5 px-4 py-3 bg-red-50 border border-red-200 text-red-800 rounded-lg text-sm flex items-start gap-2">
+      <svg class="w-4 h-4 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+      </svg>
+      {error}
+    </div>
+  )}
+
+  <form method="post" class="space-y-5 max-w-2xl">
+    <input type="hidden" name="sha" value={sha} />
+
+    <div class="grid sm:grid-cols-2 gap-4">
+      <div class="sm:col-span-2">
+        <label class="block text-sm font-medium text-gray-700 mb-1">Title <span class="text-red-400">*</span></label>
+        <input type="text" name="title" required value={fields.title}
+          class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-scout-blue" />
+      </div>
+
+      <div class="sm:col-span-2">
+        <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+        <input type="text" name="description" value={fields.description}
+          class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-scout-blue" />
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Section <span class="text-red-400">*</span></label>
+        <input type="text" name="section" required list="sections" value={fields.section}
+          class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-scout-blue" />
+        <datalist id="sections">
+          <option value="Leadership" />
+          <option value="Policies" />
+          <option value="Planning" />
+          <option value="Resources" />
+        </datalist>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Display order</label>
+        <input type="number" name="order" value={fields.order} min="1" max="999"
+          class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-scout-blue" />
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Last updated</label>
+        <input type="date" name="lastUpdated" value={fields.lastUpdated}
+          class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-scout-blue" />
+      </div>
+    </div>
+
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-1">Content <span class="text-red-400">*</span></label>
+      <p class="text-xs text-gray-500 mb-1.5">Supports markdown: **bold**, *italic*, ## Heading, - lists, [link](url), tables</p>
+      <textarea name="body" required rows="18"
+        class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-scout-blue resize-y"
+      >{fields.body}</textarea>
+    </div>
+
+    <div class="flex items-center gap-3 pt-1">
+      <button type="submit"
+        class="bg-scout-blue text-white px-5 py-2 rounded-lg text-sm font-semibold hover:bg-scout-blue-mid transition-colors">
+        Save Changes
+      </button>
+      <a href="/admin/docs" class="text-sm text-gray-500 hover:text-gray-700 transition-colors">Cancel</a>
+    </div>
+  </form>
+
+</AdminLayout>
