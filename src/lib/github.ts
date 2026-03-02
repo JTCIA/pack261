@@ -142,3 +142,41 @@ export function slugify(title: string): string {
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-|-$/g, '');
 }
+
+// ── Calendar helpers ──────────────────────────────────────────────────────────
+
+export interface CalendarEvent {
+  id: string;
+  date: string;       // YYYY-MM-DD
+  title: string;
+  location: string;
+  type: 'meeting' | 'camping' | 'deadline' | 'event' | 'special';
+  description: string;
+}
+
+const CALENDAR_PATH = 'src/data/calendar.json';
+
+export async function getCalendar(): Promise<{ events: CalendarEvent[]; sha: string } | null> {
+  const file = await getFile(CALENDAR_PATH);
+  if (!file) return null;
+  try {
+    const events = JSON.parse(file.content) as CalendarEvent[];
+    return { events, sha: file.sha };
+  } catch {
+    return null;
+  }
+}
+
+export async function putCalendar(
+  events: CalendarEvent[],
+  sha: string,
+  message: string,
+): Promise<{ ok: boolean; error?: string }> {
+  const content = JSON.stringify(events, null, 2) + '\n';
+  return putFile(CALENDAR_PATH, content, message, sha);
+}
+
+/** Generate a short unique ID for a new calendar event. */
+export function calendarEventId(): string {
+  return Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
+}

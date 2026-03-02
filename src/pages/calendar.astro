@@ -1,21 +1,17 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import rawEvents from '../data/calendar.json';
 
-// Upcoming events — edit these directly or eventually pull from a content collection
-const events = [
-  { date: '2025-10-07', title: 'Pack Meeting', location: 'Community Center', type: 'meeting', description: 'Monthly pack meeting — bring your den projects!' },
-  { date: '2025-10-10', title: 'Fall Campout (Day 1)', location: 'Eagle Creek Campground', type: 'camping', description: 'Arrive by 4:00 PM. Site B.' },
-  { date: '2025-10-11', title: 'Fall Campout (Day 2)', location: 'Eagle Creek Campground', type: 'camping', description: 'Saturday hike, archery, campfire.' },
-  { date: '2025-10-12', title: 'Fall Campout (Day 3)', location: 'Eagle Creek Campground', type: 'camping', description: 'Checkout by noon.' },
-  { date: '2025-10-25', title: 'Popcorn Orders Due', location: '', type: 'deadline', description: 'All Trail\'s End popcorn orders must be submitted today.' },
-  { date: '2025-11-04', title: 'Pack Meeting', location: 'Community Center', type: 'meeting', description: 'Monthly pack meeting' },
-  { date: '2025-11-10', title: 'Popcorn Pickup', location: 'Community Center', type: 'event', description: 'Distribute popcorn orders to families.' },
-  { date: '2025-12-02', title: 'Pack Meeting — Holiday Party', location: 'Community Center', type: 'meeting', description: 'Annual holiday party! Bring a small wrapped gift for the gift exchange.' },
-  { date: '2026-01-06', title: 'Pack Meeting', location: 'Community Center', type: 'meeting', description: 'Monthly pack meeting — Pinewood Derby car pickup' },
-  { date: '2026-01-17', title: 'Pinewood Derby', location: 'Community Center', type: 'special', description: 'Race day! Weigh-in at 9:00 AM, races begin at 10:00 AM.' },
-  { date: '2026-02-03', title: 'Pack Meeting', location: 'Community Center', type: 'meeting', description: 'Monthly pack meeting' },
-  { date: '2026-02-14', title: 'Blue & Gold Banquet', location: 'Community Center', type: 'special', description: 'Annual Blue & Gold celebration! Dinner, rank advancements, and Arrow of Light crossovers.' },
-];
+type CalendarEvent = {
+  id: string;
+  date: string;
+  title: string;
+  location: string;
+  type: string;
+  description: string;
+};
+
+const events = (rawEvents as CalendarEvent[]).sort((a, b) => a.date.localeCompare(b.date));
 
 const typeStyles: Record<string, { dot: string; badge: string }> = {
   meeting: { dot: 'bg-scout-blue', badge: 'bg-blue-100 text-blue-800' },
@@ -42,7 +38,7 @@ const grouped = events.reduce((acc, event) => {
   if (!acc[key]) acc[key] = [];
   acc[key].push(event);
   return acc;
-}, {} as Record<string, typeof events>);
+}, {} as Record<string, CalendarEvent[]>);
 ---
 
 <Layout title="Calendar" description="Upcoming events and meetings for Cub Scout Pack 261">
@@ -126,5 +122,14 @@ const grouped = events.reduce((acc, event) => {
         </div>
       </div>
     ))}
+
+    {events.length === 0 && (
+      <div class="text-center py-16 text-gray-400">
+        <svg class="w-12 h-12 mx-auto mb-3 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+        </svg>
+        <p>No upcoming events. Check back soon!</p>
+      </div>
+    )}
   </div>
 </Layout>
