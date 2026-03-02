@@ -1,0 +1,5 @@
+# Cloudflare Pages redirects
+# https://developers.cloudflare.com/pages/platform/redirects/
+
+# Redirect www to apex
+https://www.scoutpack261.com/* https://scoutpack261.com/:splat 301

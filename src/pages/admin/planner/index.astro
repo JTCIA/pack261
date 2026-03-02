@@ -1,0 +1,372 @@
+---
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+---
+
+<AdminLayout title="Pack Planner" activeSection="planner">
+
+  <div class="flex items-center justify-between mb-6">
+    <p class="text-sm text-gray-500">Track pack projects and tasks across your leadership team</p>
+    <div class="flex items-center gap-2">
+      <button id="add-task-btn" class="flex items-center gap-1.5 text-sm bg-scout-blue text-white px-3 py-1.5 rounded-lg hover:bg-scout-blue-mid transition-colors">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+        </svg>
+        Add Task
+      </button>
+      <button id="clear-done-btn" class="flex items-center gap-1.5 text-sm bg-white border border-gray-200 text-gray-600 px-3 py-1.5 rounded-lg hover:bg-gray-50 transition-colors">
+        Clear Done
+      </button>
+    </div>
+  </div>
+
+  <!-- Category filter -->
+  <div class="flex gap-2 mb-5 overflow-x-auto pb-1">
+    <button data-cat="all" class="cat-filter flex-shrink-0 px-3 py-1 rounded-full text-xs font-medium bg-scout-blue text-white border border-scout-blue transition-colors">
+      All
+    </button>
+    {['events', 'fundraising', 'advancement', 'camping', 'recruitment', 'admin'].map(cat => (
+      <button data-cat={cat} class="cat-filter flex-shrink-0 px-3 py-1 rounded-full text-xs font-medium bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 capitalize transition-colors">
+        {cat}
+      </button>
+    ))}
+  </div>
+
+  <!-- Kanban board -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    {[
+      { id: 'backlog', label: 'Backlog', color: 'border-gray-300', headerBg: 'bg-gray-100', count: 'bg-gray-200 text-gray-700' },
+      { id: 'in-progress', label: 'In Progress', color: 'border-scout-blue', headerBg: 'bg-scout-blue-pale', count: 'bg-scout-blue text-white' },
+      { id: 'done', label: 'Done', color: 'border-green-300', headerBg: 'bg-green-50', count: 'bg-green-500 text-white' },
+    ].map(({ id, label, color, headerBg, count }) => (
+      <div class="flex flex-col">
+        <div class={`flex items-center justify-between px-3 py-2 rounded-t-xl border border-b-0 ${color} ${headerBg}`}>
+          <span class="text-sm font-semibold text-gray-700">{label}</span>
+          <span id={`count-${id}`} class={`text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center ${count}`}>0</span>
+        </div>
+        <div
+          id={`col-${id}`}
+          data-col={id}
+          class={`flex-1 min-h-32 p-2 bg-gray-50 border ${color} rounded-b-xl space-y-2 kanban-col transition-colors`}
+          ondragover="event.preventDefault(); this.classList.add('bg-blue-50')"
+          ondragleave="this.classList.remove('bg-blue-50')"
+          ondrop="handleDrop(event, this)"
+        >
+          <div class="empty-hint text-xs text-gray-300 text-center py-4">Drop tasks here</div>
+        </div>
+      </div>
+    ))}
+  </div>
+
+  <!-- Add task modal -->
+  <div id="task-modal" class="hidden fixed inset-0 bg-black bg-opacity-40 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-xl w-full max-w-md">
+      <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+        <h3 class="font-semibold text-gray-900" id="modal-title">Add Task</h3>
+        <button id="close-modal" class="text-gray-400 hover:text-gray-600">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+      <form id="task-form" class="p-5 space-y-4">
+        <input type="hidden" id="task-id" />
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Title <span class="text-red-400">*</span></label>
+          <input type="text" id="task-title" required
+            class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-scout-blue"
+            placeholder="e.g. Plan Blue & Gold Banquet" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+          <textarea id="task-desc" rows="3"
+            class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-scout-blue resize-none"
+            placeholder="Optional details..."></textarea>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Category</label>
+            <select id="task-category"
+              class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-scout-blue">
+              <option value="events">Events</option>
+              <option value="fundraising">Fundraising</option>
+              <option value="advancement">Advancement</option>
+              <option value="camping">Camping</option>
+              <option value="recruitment">Recruitment</option>
+              <option value="admin">Admin</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Priority</label>
+            <select id="task-priority"
+              class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-scout-blue">
+              <option value="normal">Normal</option>
+              <option value="high">High</option>
+              <option value="low">Low</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Assigned to</label>
+          <input type="text" id="task-assignee"
+            class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-scout-blue"
+            placeholder="Leader name or role" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Due date</label>
+          <input type="date" id="task-due"
+            class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-scout-blue" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Column</label>
+          <select id="task-col"
+            class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-scout-blue">
+            <option value="backlog">Backlog</option>
+            <option value="in-progress">In Progress</option>
+            <option value="done">Done</option>
+          </select>
+        </div>
+        <div class="flex gap-2 pt-1">
+          <button type="submit" class="flex-1 bg-scout-blue text-white py-2 rounded-lg text-sm font-semibold hover:bg-scout-blue-mid transition-colors">
+            Save Task
+          </button>
+          <button type="button" id="delete-task-btn" class="hidden px-4 py-2 rounded-lg text-sm font-medium text-red-600 border border-red-200 hover:bg-red-50 transition-colors">
+            Delete
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+</AdminLayout>
+
+<script>
+  const STORAGE_KEY = 'pack261-planner-v1';
+
+  interface Task {
+    id: string;
+    title: string;
+    desc: string;
+    category: string;
+    priority: string;
+    assignee: string;
+    due: string;
+    col: string;
+    createdAt: number;
+  }
+
+  const catColors: Record<string, string> = {
+    events: 'bg-blue-100 text-blue-700',
+    fundraising: 'bg-yellow-100 text-yellow-700',
+    advancement: 'bg-purple-100 text-purple-700',
+    camping: 'bg-green-100 text-green-700',
+    recruitment: 'bg-pink-100 text-pink-700',
+    admin: 'bg-gray-100 text-gray-700',
+  };
+
+  const priorityDot: Record<string, string> = {
+    high: 'bg-red-400',
+    normal: 'bg-gray-300',
+    low: 'bg-green-400',
+  };
+
+  let tasks: Task[] = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '[]');
+  let activeFilter = 'all';
+  let editingId: string | null = null;
+
+  function save() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+  }
+
+  function uid() {
+    return Date.now().toString(36) + Math.random().toString(36).slice(2);
+  }
+
+  function formatDue(dateStr: string) {
+    if (!dateStr) return '';
+    const d = new Date(dateStr + 'T12:00:00');
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  }
+
+  function renderBoard() {
+    const cols = ['backlog', 'in-progress', 'done'];
+    cols.forEach(colId => {
+      const el = document.getElementById(`col-${colId}`);
+      if (!el) return;
+      const filtered = tasks.filter(t => t.col === colId && (activeFilter === 'all' || t.category === activeFilter));
+      const count = document.getElementById(`count-${colId}`);
+      if (count) count.textContent = String(filtered.length);
+
+      // Clear children except empty-hint
+      Array.from(el.children).forEach(child => {
+        if (!child.classList.contains('empty-hint')) child.remove();
+      });
+
+      const hint = el.querySelector('.empty-hint') as HTMLElement;
+      if (hint) hint.style.display = filtered.length ? 'none' : '';
+
+      filtered.forEach(task => {
+        const card = document.createElement('div');
+        card.className = 'task-card bg-white border border-gray-200 rounded-lg p-3 shadow-sm cursor-pointer hover:shadow-md transition-shadow';
+        card.draggable = true;
+        card.dataset.id = task.id;
+
+        const isOverdue = task.due && new Date(task.due + 'T23:59:59') < new Date();
+
+        card.innerHTML = `
+          <div class="flex items-start gap-2 mb-2">
+            <div class="w-2 h-2 rounded-full flex-shrink-0 mt-1.5 ${priorityDot[task.priority] ?? 'bg-gray-300'}"></div>
+            <p class="text-sm font-medium text-gray-900 leading-snug flex-1">${escapeHtml(task.title)}</p>
+          </div>
+          ${task.desc ? `<p class="text-xs text-gray-500 mb-2 pl-4 line-clamp-2">${escapeHtml(task.desc)}</p>` : ''}
+          <div class="flex items-center gap-1.5 flex-wrap pl-4">
+            <span class="text-xs px-1.5 py-0.5 rounded-full capitalize ${catColors[task.category] ?? 'bg-gray-100 text-gray-600'}">${task.category}</span>
+            ${task.assignee ? `<span class="text-xs text-gray-400">@${escapeHtml(task.assignee)}</span>` : ''}
+            ${task.due ? `<span class="text-xs ml-auto ${isOverdue && colId !== 'done' ? 'text-red-500 font-medium' : 'text-gray-400'}">${isOverdue && colId !== 'done' ? '⚠ ' : ''}${formatDue(task.due)}</span>` : ''}
+          </div>
+        `;
+
+        card.addEventListener('click', () => openEdit(task));
+        card.addEventListener('dragstart', (e) => {
+          if (e.dataTransfer) e.dataTransfer.setData('text/plain', task.id);
+        });
+
+        el.insertBefore(card, hint);
+      });
+    });
+  }
+
+  function escapeHtml(str: string) {
+    return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  // Modal handling
+  const modal = document.getElementById('task-modal')!;
+  const form = document.getElementById('task-form') as HTMLFormElement;
+  const addBtn = document.getElementById('add-task-btn')!;
+  const closeBtn = document.getElementById('close-modal')!;
+  const deleteBtn = document.getElementById('delete-task-btn')!;
+  const modalTitle = document.getElementById('modal-title')!;
+
+  function openAdd() {
+    editingId = null;
+    modalTitle.textContent = 'Add Task';
+    form.reset();
+    deleteBtn.classList.add('hidden');
+    modal.classList.remove('hidden');
+    (document.getElementById('task-title') as HTMLInputElement).focus();
+  }
+
+  function openEdit(task: Task) {
+    editingId = task.id;
+    modalTitle.textContent = 'Edit Task';
+    (document.getElementById('task-id') as HTMLInputElement).value = task.id;
+    (document.getElementById('task-title') as HTMLInputElement).value = task.title;
+    (document.getElementById('task-desc') as HTMLTextAreaElement).value = task.desc;
+    (document.getElementById('task-category') as HTMLSelectElement).value = task.category;
+    (document.getElementById('task-priority') as HTMLSelectElement).value = task.priority;
+    (document.getElementById('task-assignee') as HTMLInputElement).value = task.assignee;
+    (document.getElementById('task-due') as HTMLInputElement).value = task.due;
+    (document.getElementById('task-col') as HTMLSelectElement).value = task.col;
+    deleteBtn.classList.remove('hidden');
+    modal.classList.remove('hidden');
+  }
+
+  function closeModal() {
+    modal.classList.add('hidden');
+    form.reset();
+    editingId = null;
+  }
+
+  addBtn.addEventListener('click', openAdd);
+  closeBtn.addEventListener('click', closeModal);
+  modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const task: Task = {
+      id: editingId ?? uid(),
+      title: (document.getElementById('task-title') as HTMLInputElement).value,
+      desc: (document.getElementById('task-desc') as HTMLTextAreaElement).value,
+      category: (document.getElementById('task-category') as HTMLSelectElement).value,
+      priority: (document.getElementById('task-priority') as HTMLSelectElement).value,
+      assignee: (document.getElementById('task-assignee') as HTMLInputElement).value,
+      due: (document.getElementById('task-due') as HTMLInputElement).value,
+      col: (document.getElementById('task-col') as HTMLSelectElement).value,
+      createdAt: editingId ? (tasks.find(t => t.id === editingId)?.createdAt ?? Date.now()) : Date.now(),
+    };
+
+    if (editingId) {
+      tasks = tasks.map(t => t.id === editingId ? task : t);
+    } else {
+      tasks.push(task);
+    }
+
+    save();
+    renderBoard();
+    closeModal();
+  });
+
+  deleteBtn.addEventListener('click', () => {
+    if (editingId && confirm('Delete this task?')) {
+      tasks = tasks.filter(t => t.id !== editingId);
+      save();
+      renderBoard();
+      closeModal();
+    }
+  });
+
+  // Drag and drop
+  (window as any).handleDrop = (e: DragEvent, col: HTMLElement) => {
+    e.preventDefault();
+    col.classList.remove('bg-blue-50');
+    const id = e.dataTransfer?.getData('text/plain');
+    const colId = col.dataset.col;
+    if (id && colId) {
+      tasks = tasks.map(t => t.id === id ? { ...t, col: colId } : t);
+      save();
+      renderBoard();
+    }
+  };
+
+  // Category filter
+  document.querySelectorAll<HTMLButtonElement>('.cat-filter').forEach(btn => {
+    btn.addEventListener('click', () => {
+      activeFilter = btn.dataset.cat ?? 'all';
+      document.querySelectorAll<HTMLButtonElement>('.cat-filter').forEach(b => {
+        const isActive = b.dataset.cat === activeFilter;
+        b.classList.toggle('bg-scout-blue', isActive);
+        b.classList.toggle('text-white', isActive);
+        b.classList.toggle('border-scout-blue', isActive);
+        b.classList.toggle('bg-white', !isActive);
+        b.classList.toggle('text-gray-600', !isActive);
+        b.classList.toggle('border-gray-200', !isActive);
+      });
+      renderBoard();
+    });
+  });
+
+  // Clear done
+  document.getElementById('clear-done-btn')?.addEventListener('click', () => {
+    const doneTasks = tasks.filter(t => t.col === 'done');
+    if (doneTasks.length === 0) return;
+    if (confirm(`Remove ${doneTasks.length} completed task(s)?`)) {
+      tasks = tasks.filter(t => t.col !== 'done');
+      save();
+      renderBoard();
+    }
+  });
+
+  // Seed with example tasks if empty
+  if (tasks.length === 0) {
+    tasks = [
+      { id: uid(), title: 'Plan Blue & Gold Banquet', desc: 'Venue, menu, invitations, ceremony order', category: 'events', priority: 'high', assignee: 'Committee Chair', due: '2026-01-15', col: 'backlog', createdAt: Date.now() },
+      { id: uid(), title: 'Order Pinewood Derby kits', desc: 'Need 30 kits. Contact scout shop.', category: 'events', priority: 'high', assignee: 'Treasurer', due: '2025-11-01', col: 'in-progress', createdAt: Date.now() },
+      { id: uid(), title: 'Collect recharter fees', desc: '', category: 'admin', priority: 'normal', assignee: 'Treasurer', due: '2025-10-15', col: 'in-progress', createdAt: Date.now() },
+      { id: uid(), title: 'Update Pack website', desc: 'Add new leaders and update contact info', category: 'admin', priority: 'low', assignee: '', due: '', col: 'done', createdAt: Date.now() },
+      { id: uid(), title: 'Recruit new Lion den leader', desc: 'We have 4 new kindergarteners without a den', category: 'recruitment', priority: 'high', assignee: 'Cubmaster', due: '', col: 'backlog', createdAt: Date.now() },
+    ];
+    save();
+  }
+
+  renderBoard();
+</script>

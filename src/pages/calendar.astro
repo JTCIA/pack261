@@ -1,0 +1,130 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+// Upcoming events — edit these directly or eventually pull from a content collection
+const events = [
+  { date: '2025-10-07', title: 'Pack Meeting', location: 'Community Center', type: 'meeting', description: 'Monthly pack meeting — bring your den projects!' },
+  { date: '2025-10-10', title: 'Fall Campout (Day 1)', location: 'Eagle Creek Campground', type: 'camping', description: 'Arrive by 4:00 PM. Site B.' },
+  { date: '2025-10-11', title: 'Fall Campout (Day 2)', location: 'Eagle Creek Campground', type: 'camping', description: 'Saturday hike, archery, campfire.' },
+  { date: '2025-10-12', title: 'Fall Campout (Day 3)', location: 'Eagle Creek Campground', type: 'camping', description: 'Checkout by noon.' },
+  { date: '2025-10-25', title: 'Popcorn Orders Due', location: '', type: 'deadline', description: 'All Trail\'s End popcorn orders must be submitted today.' },
+  { date: '2025-11-04', title: 'Pack Meeting', location: 'Community Center', type: 'meeting', description: 'Monthly pack meeting' },
+  { date: '2025-11-10', title: 'Popcorn Pickup', location: 'Community Center', type: 'event', description: 'Distribute popcorn orders to families.' },
+  { date: '2025-12-02', title: 'Pack Meeting — Holiday Party', location: 'Community Center', type: 'meeting', description: 'Annual holiday party! Bring a small wrapped gift for the gift exchange.' },
+  { date: '2026-01-06', title: 'Pack Meeting', location: 'Community Center', type: 'meeting', description: 'Monthly pack meeting — Pinewood Derby car pickup' },
+  { date: '2026-01-17', title: 'Pinewood Derby', location: 'Community Center', type: 'special', description: 'Race day! Weigh-in at 9:00 AM, races begin at 10:00 AM.' },
+  { date: '2026-02-03', title: 'Pack Meeting', location: 'Community Center', type: 'meeting', description: 'Monthly pack meeting' },
+  { date: '2026-02-14', title: 'Blue & Gold Banquet', location: 'Community Center', type: 'special', description: 'Annual Blue & Gold celebration! Dinner, rank advancements, and Arrow of Light crossovers.' },
+];
+
+const typeStyles: Record<string, { dot: string; badge: string }> = {
+  meeting: { dot: 'bg-scout-blue', badge: 'bg-blue-100 text-blue-800' },
+  camping: { dot: 'bg-green-500', badge: 'bg-green-100 text-green-800' },
+  deadline: { dot: 'bg-red-500', badge: 'bg-red-100 text-red-800' },
+  event: { dot: 'bg-scout-gold', badge: 'bg-yellow-100 text-yellow-800' },
+  special: { dot: 'bg-purple-500', badge: 'bg-purple-100 text-purple-800' },
+};
+
+function formatDate(dateStr: string) {
+  const d = new Date(dateStr + 'T12:00:00');
+  return {
+    month: d.toLocaleDateString('en-US', { month: 'short' }),
+    day: d.getDate(),
+    weekday: d.toLocaleDateString('en-US', { weekday: 'long' }),
+    full: d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
+  };
+}
+
+// Group by month
+const grouped = events.reduce((acc, event) => {
+  const d = new Date(event.date + 'T12:00:00');
+  const key = d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  if (!acc[key]) acc[key] = [];
+  acc[key].push(event);
+  return acc;
+}, {} as Record<string, typeof events>);
+---
+
+<Layout title="Calendar" description="Upcoming events and meetings for Cub Scout Pack 261">
+
+  <div class="bg-scout-blue py-12 px-4 text-white text-center">
+    <h1 class="text-3xl font-bold mb-2">Pack Calendar</h1>
+    <p class="text-blue-200">Upcoming events, meetings, and important dates</p>
+  </div>
+
+  <!-- Legend -->
+  <div class="bg-white border-b border-gray-200">
+    <div class="max-w-4xl mx-auto px-4 py-3 flex flex-wrap gap-4 text-sm">
+      {Object.entries(typeStyles).map(([type, styles]) => (
+        <div class="flex items-center gap-1.5">
+          <div class={`w-2.5 h-2.5 rounded-full ${styles.dot}`}></div>
+          <span class="text-gray-600 capitalize">{type}</span>
+        </div>
+      ))}
+    </div>
+  </div>
+
+  <div class="max-w-4xl mx-auto px-4 py-8">
+
+    <!-- Subscribe prompt -->
+    <div class="bg-scout-blue-pale border border-blue-200 rounded-xl p-4 mb-8 flex items-start gap-3">
+      <svg class="w-5 h-5 text-scout-blue mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+      <div class="text-sm text-gray-700">
+        <strong class="text-scout-blue">Stay up to date:</strong> Contact your den leader or pack leadership to receive calendar invites and reminders directly to your calendar app.
+      </div>
+    </div>
+
+    <!-- Events by month -->
+    {Object.entries(grouped).map(([month, monthEvents]) => (
+      <div class="mb-8">
+        <h2 class="text-lg font-bold text-scout-blue mb-4 flex items-center gap-2">
+          <div class="h-px flex-1 bg-blue-200"></div>
+          <span class="px-3">{month}</span>
+          <div class="h-px flex-1 bg-blue-200"></div>
+        </h2>
+
+        <div class="space-y-3">
+          {monthEvents.map((event) => {
+            const fmt = formatDate(event.date);
+            const styles = typeStyles[event.type] ?? typeStyles.event;
+            return (
+              <div class="flex gap-4 bg-white border border-gray-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow">
+                <!-- Date badge -->
+                <div class="flex-shrink-0 text-center w-12">
+                  <div class="text-xs font-semibold text-gray-400 uppercase">{fmt.month}</div>
+                  <div class="text-2xl font-bold text-scout-blue leading-none">{fmt.day}</div>
+                </div>
+
+                <div class="border-l border-gray-200 pl-4 flex-1 min-w-0">
+                  <div class="flex items-start justify-between gap-2">
+                    <div>
+                      <div class="flex items-center gap-2 flex-wrap mb-0.5">
+                        <div class={`w-2 h-2 rounded-full flex-shrink-0 ${styles.dot}`}></div>
+                        <h3 class="font-semibold text-gray-900 text-sm">{event.title}</h3>
+                      </div>
+                      {event.location && (
+                        <p class="text-xs text-gray-400 flex items-center gap-1 mb-1">
+                          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                          </svg>
+                          {event.location}
+                        </p>
+                      )}
+                      <p class="text-xs text-gray-500">{event.description}</p>
+                    </div>
+                    <span class={`text-xs font-medium px-2 py-0.5 rounded-full flex-shrink-0 capitalize ${styles.badge}`}>
+                      {event.type}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    ))}
+  </div>
+</Layout>

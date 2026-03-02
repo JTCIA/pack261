@@ -1,0 +1,115 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="About" description="Learn about Cub Scout Pack 261 — our history, leadership, and mission">
+
+  <div class="bg-scout-blue py-12 px-4 text-white text-center">
+    <h1 class="text-3xl font-bold mb-2">About Pack 261</h1>
+    <p class="text-blue-200">Our story, mission, and leadership team</p>
+  </div>
+
+  <div class="max-w-4xl mx-auto px-4 py-12">
+
+    <!-- Mission statement -->
+    <div class="bg-gradient-to-r from-scout-blue to-scout-blue-mid rounded-2xl p-8 text-white mb-12 text-center">
+      <h2 class="text-2xl font-bold mb-4">Our Mission</h2>
+      <p class="text-lg text-blue-100 leading-relaxed max-w-2xl mx-auto">
+        Pack 261 is committed to building character, citizenship, and physical fitness in young people through the Cub Scout program. We believe every child deserves the opportunity to grow, explore, and serve their community.
+      </p>
+    </div>
+
+    <!-- About sections -->
+    <div class="grid md:grid-cols-2 gap-8 mb-12">
+      <div>
+        <h2 class="text-2xl font-bold text-scout-blue mb-4">Who We Are</h2>
+        <p class="text-gray-600 leading-relaxed mb-4">
+          Pack 261 is a Cub Scout pack chartered by [Charter Organization] in [City, State]. We serve scouts in kindergarten through 5th grade, organized into dens by rank.
+        </p>
+        <p class="text-gray-600 leading-relaxed mb-4">
+          Our pack is part of the Boy Scouts of America's [Council Name] Council, [District Name] District.
+        </p>
+        <p class="text-gray-600 leading-relaxed">
+          We've been proudly serving our community since [year], and are always excited to welcome new scouts and families.
+        </p>
+      </div>
+      <div>
+        <h2 class="text-2xl font-bold text-scout-blue mb-4">What We Do</h2>
+        <ul class="space-y-3">
+          {[
+            'Monthly pack meetings with activities and advancement ceremonies',
+            'Weekly den meetings focused on rank-specific adventures',
+            'Camping trips and outdoor adventures throughout the year',
+            'Community service projects and service learning',
+            'The Pinewood Derby — our most exciting annual tradition',
+            'Blue & Gold Banquet celebrating the founding of Scouting',
+            'Day camp and resident camp in the summer',
+          ].map((item) => (
+            <li class="flex items-start gap-2 text-gray-600 text-sm">
+              <svg class="w-5 h-5 text-scout-gold mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+              </svg>
+              {item}
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+
+    <!-- Ranks section -->
+    <div class="mb-12">
+      <h2 class="text-2xl font-bold text-scout-blue mb-6 text-center">Rank Progression</h2>
+      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
+        {[
+          { rank: 'Lion', grade: 'Kindergarten', color: 'bg-yellow-400', textColor: 'text-yellow-900' },
+          { rank: 'Tiger', grade: '1st Grade', color: 'bg-orange-400', textColor: 'text-orange-900' },
+          { rank: 'Wolf', grade: '2nd Grade', color: 'bg-red-400', textColor: 'text-red-900' },
+          { rank: 'Bear', grade: '3rd Grade', color: 'bg-amber-700', textColor: 'text-amber-100' },
+          { rank: 'Webelos', grade: '4th Grade', color: 'bg-scout-blue-mid', textColor: 'text-white' },
+          { rank: 'Arrow of Light', grade: '5th Grade', color: 'bg-scout-blue', textColor: 'text-white' },
+        ].map(({ rank, grade, color, textColor }) => (
+          <div class={`${color} rounded-xl p-4 text-center shadow-sm`}>
+            <div class={`font-bold text-sm ${textColor}`}>{rank}</div>
+            <div class={`text-xs mt-1 opacity-80 ${textColor}`}>{grade}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+
+    <!-- Leadership -->
+    <div class="mb-12">
+      <h2 class="text-2xl font-bold text-scout-blue mb-6">Pack Leadership</h2>
+      <div class="grid sm:grid-cols-2 md:grid-cols-3 gap-4">
+        {[
+          { role: 'Cubmaster', name: '[Name]', description: 'Overall program leadership' },
+          { role: 'Pack Committee Chair', name: '[Name]', description: 'Pack administration and governance' },
+          { role: 'Treasurer', name: '[Name]', description: 'Financial management' },
+          { role: 'Advancement Chair', name: '[Name]', description: 'Awards and rank tracking' },
+          { role: 'Membership Chair', name: '[Name]', description: 'Recruitment and registration' },
+          { role: 'Outdoor Activities Chair', name: '[Name]', description: 'Camping and outdoor events' },
+        ].map(({ role, name, description }) => (
+          <div class="bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
+            <div class="w-10 h-10 bg-scout-blue-pale rounded-full flex items-center justify-center mb-3">
+              <svg class="w-5 h-5 text-scout-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+            </div>
+            <h3 class="font-semibold text-gray-900 text-sm">{role}</h3>
+            <p class="text-scout-blue font-medium text-sm">{name}</p>
+            <p class="text-gray-500 text-xs mt-1">{description}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+
+    <!-- CTA -->
+    <div class="bg-scout-gold-pale border border-yellow-300 rounded-2xl p-8 text-center">
+      <h2 class="text-xl font-bold text-scout-blue mb-3">Interested in Joining?</h2>
+      <p class="text-gray-700 mb-4">We welcome new scouts and families year-round. No scouting experience required — just a spirit of adventure!</p>
+      <a href="/contact" class="inline-block bg-scout-gold text-scout-blue px-6 py-3 rounded-lg font-semibold hover:bg-scout-gold-dark hover:text-white transition-colors shadow-md">
+        Contact Us to Join
+      </a>
+    </div>
+
+  </div>
+</Layout>

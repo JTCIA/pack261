@@ -1,0 +1,162 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { getCollection } from 'astro:content';
+
+const announcements = (await getCollection('announcements'))
+  .sort((a, b) => {
+    if (a.data.pinned && !b.data.pinned) return -1;
+    if (!a.data.pinned && b.data.pinned) return 1;
+    return b.data.date.valueOf() - a.data.date.valueOf();
+  })
+  .slice(0, 3);
+
+const categoryColors: Record<string, string> = {
+  event: 'bg-blue-100 text-blue-800',
+  news: 'bg-green-100 text-green-800',
+  fundraiser: 'bg-yellow-100 text-yellow-800',
+  achievement: 'bg-purple-100 text-purple-800',
+  reminder: 'bg-red-100 text-red-800',
+};
+
+function formatDate(date: Date) {
+  return date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+}
+---
+
+<Layout title="Home" description="Cub Scout Pack 261 — Your home for pack news, events, and resources.">
+
+  <!-- Hero -->
+  <section class="bg-gradient-to-br from-scout-blue to-scout-blue-mid text-white py-20 px-4">
+    <div class="max-w-4xl mx-auto text-center">
+      <div class="w-24 h-24 bg-scout-gold rounded-full flex items-center justify-center mx-auto mb-6 shadow-xl">
+        <span class="text-scout-blue font-bold text-3xl">261</span>
+      </div>
+      <h1 class="text-4xl md:text-5xl font-bold mb-4">Cub Scout Pack 261</h1>
+      <p class="text-xl text-blue-100 mb-2">Building character. Creating memories. Serving our community.</p>
+      <p class="text-blue-200 mb-8 text-sm">Chartered by [Charter Organization] &bull; [City, State]</p>
+      <div class="flex flex-wrap justify-center gap-3">
+        <a href="/announcements" class="bg-scout-gold text-scout-blue px-6 py-3 rounded-lg font-semibold hover:bg-scout-gold-light transition-colors shadow-md">
+          Latest News
+        </a>
+        <a href="/about" class="border-2 border-white text-white px-6 py-3 rounded-lg font-semibold hover:bg-white hover:text-scout-blue transition-colors">
+          About Our Pack
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Scout values strip -->
+  <section class="bg-scout-gold py-3">
+    <div class="max-w-4xl mx-auto px-4 text-center">
+      <p class="text-scout-blue font-semibold text-sm tracking-wide">
+        Trustworthy &bull; Loyal &bull; Helpful &bull; Friendly &bull; Courteous &bull; Kind &bull; Obedient &bull; Cheerful &bull; Thrifty &bull; Brave &bull; Clean &bull; Reverent
+      </p>
+    </div>
+  </section>
+
+  <!-- Main content -->
+  <div class="max-w-6xl mx-auto px-4 py-12">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-10">
+
+      <!-- Announcements column -->
+      <div class="lg:col-span-2">
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="text-2xl font-bold text-scout-blue">Latest Announcements</h2>
+          <a href="/announcements" class="text-scout-blue-mid hover:text-scout-blue text-sm font-medium">View all &rarr;</a>
+        </div>
+
+        <div class="space-y-4">
+          {announcements.map((post) => (
+            <article class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow">
+              <div class="flex items-start justify-between gap-3 mb-2">
+                <div class="flex items-center gap-2 flex-wrap">
+                  {post.data.pinned && (
+                    <span class="bg-scout-gold text-scout-blue text-xs font-semibold px-2 py-0.5 rounded-full">
+                      Pinned
+                    </span>
+                  )}
+                  <span class={`text-xs font-medium px-2 py-0.5 rounded-full capitalize ${categoryColors[post.data.category]}`}>
+                    {post.data.category}
+                  </span>
+                </div>
+                <time class="text-xs text-gray-400 flex-shrink-0">{formatDate(post.data.date)}</time>
+              </div>
+              <h3 class="font-semibold text-gray-900 text-lg mb-1">{post.data.title}</h3>
+              <p class="text-gray-600 text-sm leading-relaxed">{post.data.summary}</p>
+              <p class="text-xs text-gray-400 mt-3">— {post.data.author}</p>
+            </article>
+          ))}
+        </div>
+      </div>
+
+      <!-- Sidebar -->
+      <div class="space-y-6">
+        <!-- Quick info card -->
+        <div class="bg-scout-blue-pale border border-blue-200 rounded-xl p-5">
+          <h3 class="font-bold text-scout-blue text-lg mb-4 flex items-center gap-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            Pack Meetings
+          </h3>
+          <div class="space-y-2 text-sm text-gray-700">
+            <div class="flex items-start gap-2">
+              <svg class="w-4 h-4 text-scout-gold mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+              </svg>
+              <span><strong>When:</strong> 1st Tuesday of the month</span>
+            </div>
+            <div class="flex items-start gap-2">
+              <svg class="w-4 h-4 text-scout-gold mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+              </svg>
+              <span><strong>Time:</strong> 7:00 PM – 8:00 PM</span>
+            </div>
+            <div class="flex items-start gap-2">
+              <svg class="w-4 h-4 text-scout-gold mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+              </svg>
+              <span><strong>Location:</strong> [Community Center]<br />[Address]</span>
+            </div>
+          </div>
+          <a href="/calendar" class="mt-4 block text-center bg-scout-blue text-white py-2 rounded-lg text-sm font-medium hover:bg-scout-blue-mid transition-colors">
+            View Full Calendar
+          </a>
+        </div>
+
+        <!-- Join box -->
+        <div class="bg-scout-gold-pale border border-yellow-300 rounded-xl p-5">
+          <h3 class="font-bold text-scout-blue text-lg mb-2">Join Our Pack!</h3>
+          <p class="text-sm text-gray-700 mb-4">
+            Cub Scouting is open to youth in grades K–5. Join thousands of scouts building skills, friendships, and memories.
+          </p>
+          <a href="/contact" class="block text-center bg-scout-gold text-scout-blue py-2 rounded-lg text-sm font-semibold hover:bg-scout-gold-dark hover:text-white transition-colors">
+            Get in Touch
+          </a>
+        </div>
+
+        <!-- Den levels -->
+        <div class="bg-white border border-gray-200 rounded-xl p-5">
+          <h3 class="font-bold text-scout-blue text-lg mb-3">Our Dens</h3>
+          <div class="space-y-2 text-sm">
+            {[
+              { rank: 'Lion', grade: 'Kindergarten', color: 'bg-yellow-400' },
+              { rank: 'Tiger', grade: '1st Grade', color: 'bg-orange-400' },
+              { rank: 'Wolf', grade: '2nd Grade', color: 'bg-red-400' },
+              { rank: 'Bear', grade: '3rd Grade', color: 'bg-amber-700' },
+              { rank: 'Webelos', grade: '4th Grade', color: 'bg-scout-blue-mid' },
+              { rank: 'Arrow of Light', grade: '5th Grade', color: 'bg-scout-blue' },
+            ].map(({ rank, grade, color }) => (
+              <div class="flex items-center gap-3">
+                <div class={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${color}`}></div>
+                <span class="font-medium text-gray-800">{rank}</span>
+                <span class="text-gray-500 ml-auto">{grade}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</Layout>
