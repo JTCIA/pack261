@@ -227,3 +227,40 @@ export async function putCalendar(
 export function calendarEventId(): string {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
 }
+
+// ── Planner helpers ───────────────────────────────────────────────────────────
+
+export interface PlannerTask {
+  id: string;
+  title: string;
+  desc: string;
+  category: string;
+  priority: string;
+  assignee: string;
+  due: string;
+  col: string;
+  createdAt: number;
+}
+
+const PLANNER_PATH = 'src/data/planner.json';
+
+export async function getPlanner(token?: string): Promise<{ tasks: PlannerTask[]; sha: string } | GHError | null> {
+  const file = await getFile(PLANNER_PATH, token);
+  if (!file || isGHError(file)) return file;
+  try {
+    const tasks = JSON.parse(file.content) as PlannerTask[];
+    return { tasks, sha: file.sha };
+  } catch {
+    return { status: 0, message: 'planner.json contains invalid JSON' };
+  }
+}
+
+export async function putPlanner(
+  tasks: PlannerTask[],
+  sha: string,
+  message: string,
+  token?: string,
+): Promise<{ ok: boolean; error?: string }> {
+  const content = JSON.stringify(tasks, null, 2) + '\n';
+  return putFile(PLANNER_PATH, content, message, sha, token);
+}

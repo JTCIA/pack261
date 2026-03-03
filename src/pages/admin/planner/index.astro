@@ -8,7 +8,9 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
 
   <div class="flex items-center justify-between mb-6">
     <p class="text-sm text-gray-500">Track pack projects and tasks across your leadership team</p>
-    <div class="flex items-center gap-2">
+    <div class="flex items-center gap-3">
+      <span id="save-status" class="text-xs text-gray-400"></span>
+      <div class="flex items-center gap-2">
       <button id="add-task-btn" class="flex items-center gap-1.5 text-sm bg-scout-blue text-white px-3 py-1.5 rounded-lg hover:bg-scout-blue-mid transition-colors">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
@@ -18,6 +20,7 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
       <button id="clear-done-btn" class="flex items-center gap-1.5 text-sm bg-white border border-gray-200 text-gray-600 px-3 py-1.5 rounded-lg hover:bg-gray-50 transition-colors">
         Clear Done
       </button>
+      </div>
     </div>
   </div>
 
@@ -142,8 +145,6 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
 </AdminLayout>
 
 <script>
-  const STORAGE_KEY = 'pack261-planner-v1';
-
   interface Task {
     id: string;
     title: string;
@@ -171,12 +172,59 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
     low: 'bg-green-400',
   };
 
-  let tasks: Task[] = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '[]');
+  let tasks: Task[] = [];
+  let currentSha = '';
   let activeFilter = 'all';
   let editingId: string | null = null;
+  let saveTimer: ReturnType<typeof setTimeout> | null = null;
 
+  // ── Status indicator ────────────────────────────────────────────────────────
+  const statusEl = document.getElementById('save-status')!;
+  function setStatus(text: string, color: string) {
+    statusEl.textContent = text;
+    statusEl.className = `text-xs ${color} transition-opacity`;
+  }
+
+  // ── API helpers ─────────────────────────────────────────────────────────────
+  async function loadTasks() {
+    setStatus('Loading…', 'text-gray-400');
+    try {
+      const res = await fetch('/api/planner');
+      const data = await res.json() as { tasks: Task[]; sha: string; error?: string };
+      if (!res.ok) throw new Error(data.error ?? `HTTP ${res.status}`);
+      tasks = data.tasks;
+      currentSha = data.sha;
+      setStatus('', '');
+    } catch (err) {
+      setStatus('Failed to load', 'text-red-500');
+      console.error('Planner load error:', err);
+    }
+    renderBoard();
+  }
+
+  async function saveTasks() {
+    setStatus('Saving…', 'text-gray-400');
+    try {
+      const res = await fetch('/api/planner', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tasks, sha: currentSha }),
+      });
+      const data = await res.json() as { ok: boolean; sha?: string; error?: string };
+      if (!res.ok) throw new Error(data.error ?? `HTTP ${res.status}`);
+      if (data.sha) currentSha = data.sha;
+      setStatus('Saved', 'text-green-600');
+      setTimeout(() => setStatus('', ''), 2000);
+    } catch (err) {
+      setStatus('Save failed', 'text-red-500');
+      console.error('Planner save error:', err);
+    }
+  }
+
+  // Debounce saves slightly so rapid drags don't fire simultaneous requests
   function save() {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+    if (saveTimer) clearTimeout(saveTimer);
+    saveTimer = setTimeout(saveTasks, 300);
   }
 
   function uid() {
@@ -358,17 +406,6 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
     }
   });
 
-  // Seed with example tasks if empty
-  if (tasks.length === 0) {
-    tasks = [
-      { id: uid(), title: 'Plan Blue & Gold Banquet', desc: 'Venue, menu, invitations, ceremony order', category: 'events', priority: 'high', assignee: 'Committee Chair', due: '2026-01-15', col: 'backlog', createdAt: Date.now() },
-      { id: uid(), title: 'Order Pinewood Derby kits', desc: 'Need 30 kits. Contact scout shop.', category: 'events', priority: 'high', assignee: 'Treasurer', due: '2025-11-01', col: 'in-progress', createdAt: Date.now() },
-      { id: uid(), title: 'Collect recharter fees', desc: '', category: 'admin', priority: 'normal', assignee: 'Treasurer', due: '2025-10-15', col: 'in-progress', createdAt: Date.now() },
-      { id: uid(), title: 'Update Pack website', desc: 'Add new leaders and update contact info', category: 'admin', priority: 'low', assignee: '', due: '', col: 'done', createdAt: Date.now() },
-      { id: uid(), title: 'Recruit new Lion den leader', desc: 'We have 4 new kindergarteners without a den', category: 'recruitment', priority: 'high', assignee: 'Cubmaster', due: '', col: 'backlog', createdAt: Date.now() },
-    ];
-    save();
-  }
-
-  renderBoard();
+  // Load tasks from GitHub on page load
+  loadTasks();
 </script>
