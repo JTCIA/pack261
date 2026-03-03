@@ -4,6 +4,8 @@ import { putFile, buildAnnouncementMd, slugify } from '../../../lib/github.ts';
 
 export const prerender = false;
 
+const token = Astro.locals.runtime.env.GITHUB_TOKEN;
+
 let error = '';
 const today = new Date().toISOString().split('T')[0];
 
@@ -23,7 +25,7 @@ if (Astro.request.method === 'POST') {
     const slug = slugify(title);
     const path = `src/content/announcements/${slug}.md`;
     const content = buildAnnouncementMd({ title, date, category, pinned, summary, author, body });
-    const result = await putFile(path, content, `Add announcement: ${title}`);
+    const result = await putFile(path, content, `Add announcement: ${title}`, undefined, token);
     if (result.ok) {
       return Astro.redirect('/admin/announcements?saved=created');
     }

@@ -3,6 +3,8 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
 import { getCollection } from 'astro:content';
 import { deleteFile, getFile } from '../../../lib/github.ts';
 
+const token = Astro.locals.runtime.env.GITHUB_TOKEN;
+
 let flash = '';
 let flashType: 'success' | 'error' = 'success';
 
@@ -19,9 +21,9 @@ if (Astro.request.method === 'POST') {
   if (action === 'delete') {
     const slug = form.get('slug') as string;
     const path = `src/content/announcements/${slug}.md`;
-    const file = await getFile(path);
+    const file = await getFile(path, token);
     if (file) {
-      const result = await deleteFile(path, file.sha, `Delete announcement: ${slug}`);
+      const result = await deleteFile(path, file.sha, `Delete announcement: ${slug}`, token);
       if (result.ok) {
         flash = 'Announcement deleted. Site rebuilds in ~2 minutes.';
         flashType = 'success';
