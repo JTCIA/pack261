@@ -13,7 +13,7 @@ lastUpdated: 2025-09-01
 | Month | Theme | Key Event |
 |-------|-------|-----------|
 | September | Back to Scouting | Recruiting Night, Pack Meeting |
-| October | Outdoors | Fall Campout |
+| October | Outdoor Life | Fall Campout |
 | November | Family | Family Campfire Night |
 | December | Celebration | Holiday Party |
 | January | Speed & Science | Pinewood Derby |
