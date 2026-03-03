@@ -5,11 +5,13 @@ import type { CalendarEvent } from '../../../../lib/github.ts';
 
 export const prerender = false;
 
+const token = Astro.locals.runtime.env.GITHUB_TOKEN;
+
 const { id } = Astro.params;
 let error = '';
 
 // Load current calendar
-const cal = await getCalendar();
+const cal = await getCalendar(token);
 
 if (!cal) {
   return Astro.redirect('/admin/calendar');
@@ -37,7 +39,7 @@ if (Astro.request.method === 'POST') {
     const updatedEvents = [...cal.events];
     updatedEvents[eventIndex] = updated;
 
-    const result = await putCalendar(updatedEvents, cal.sha, `Update calendar event: ${title}`);
+    const result = await putCalendar(updatedEvents, cal.sha, `Update calendar event: ${title}`, token);
     if (result.ok) {
       return Astro.redirect('/admin/calendar?saved=updated');
     }

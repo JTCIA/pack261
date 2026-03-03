@@ -5,6 +5,8 @@ import type { CalendarEvent } from '../../../lib/github.ts';
 
 export const prerender = false;
 
+const token = Astro.locals.runtime.env.GITHUB_TOKEN;
+
 let error = '';
 let saved = '';
 
@@ -15,12 +17,12 @@ if (Astro.request.method === 'POST') {
   const id = (form.get('id') as string ?? '').trim();
 
   if (action === 'delete' && id) {
-    const cal = await getCalendar();
+    const cal = await getCalendar(token);
     if (!cal) {
       error = 'Could not load calendar. Check that GITHUB_TOKEN is set.';
     } else {
       const updated = cal.events.filter((e) => e.id !== id);
-      const result = await putCalendar(updated, cal.sha, `Remove calendar event: ${id}`);
+      const result = await putCalendar(updated, cal.sha, `Remove calendar event: ${id}`, token);
       if (result.ok) {
         return Astro.redirect('/admin/calendar?saved=deleted');
       }
@@ -34,7 +36,7 @@ if (savedParam === 'created') saved = 'Event added to the calendar.';
 if (savedParam === 'updated') saved = 'Event updated successfully.';
 if (savedParam === 'deleted') saved = 'Event removed from the calendar.';
 
-const cal = await getCalendar();
+const cal = await getCalendar(token);
 const events: CalendarEvent[] = cal ? cal.events.sort((a, b) => a.date.localeCompare(b.date)) : [];
 
 const typeColors: Record<string, string> = {

@@ -5,6 +5,8 @@ import type { CalendarEvent } from '../../../lib/github.ts';
 
 export const prerender = false;
 
+const token = Astro.locals.runtime.env.GITHUB_TOKEN;
+
 let error = '';
 const today = new Date().toISOString().split('T')[0];
 
@@ -19,7 +21,7 @@ if (Astro.request.method === 'POST') {
   if (!date || !title) {
     error = 'Date and title are required.';
   } else {
-    const cal = await getCalendar();
+    const cal = await getCalendar(token);
     if (!cal) {
       error = 'Could not load calendar. Check that GITHUB_TOKEN is set.';
     } else {
@@ -31,7 +33,7 @@ if (Astro.request.method === 'POST') {
         type,
         description,
       };
-      const result = await putCalendar([...cal.events, newEvent], cal.sha, `Add calendar event: ${title}`);
+      const result = await putCalendar([...cal.events, newEvent], cal.sha, `Add calendar event: ${title}`, token);
       if (result.ok) {
         return Astro.redirect('/admin/calendar?saved=created');
       }

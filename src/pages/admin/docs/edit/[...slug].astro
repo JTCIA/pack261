@@ -4,6 +4,8 @@ import { getFile, putFile, buildDocMd, parseFrontMatter } from '../../../../lib/
 
 export const prerender = false;
 
+const token = Astro.locals.runtime.env.GITHUB_TOKEN;
+
 const { slug } = Astro.params as { slug: string };
 // Docs live at src/content/docs/<slug>/index.md
 const filePath = `src/content/docs/${slug}/index.md`;
@@ -11,7 +13,7 @@ const filePath = `src/content/docs/${slug}/index.md`;
 let error = '';
 let sha = '';
 
-const file = await getFile(filePath);
+const file = await getFile(filePath, token);
 if (!file) {
   return Astro.redirect('/admin/docs');
 }
@@ -45,7 +47,7 @@ if (Astro.request.method === 'POST') {
     error = 'Title, section, and body are required.';
   } else {
     const content = buildDocMd(fields);
-    const result = await putFile(filePath, content, `Update doc: ${fields.title}`, currentSha);
+    const result = await putFile(filePath, content, `Update doc: ${fields.title}`, currentSha, token);
     if (result.ok) {
       return Astro.redirect('/admin/docs?saved=updated');
     }

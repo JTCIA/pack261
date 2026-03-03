@@ -1,8 +1,11 @@
 // GitHub Contents API helpers — used by SSR admin pages to read/write markdown files.
-// Requires env vars: GITHUB_TOKEN, and optionally GITHUB_OWNER / GITHUB_REPO / GITHUB_BRANCH.
+//
+// IMPORTANT: pass `token` explicitly from `Astro.locals.runtime.env.GITHUB_TOKEN`.
+// Do NOT use import.meta.env.GITHUB_TOKEN — Vite replaces that reference at build
+// time (before Cloudflare injects secrets), so it is always undefined at runtime.
 
-const OWNER = (import.meta.env.GITHUB_OWNER as string | undefined) ?? 'JTCIA';
-const REPO = (import.meta.env.GITHUB_REPO as string | undefined) ?? 'pack261';
+const OWNER  = (import.meta.env.GITHUB_OWNER  as string | undefined) ?? 'JTCIA';
+const REPO   = (import.meta.env.GITHUB_REPO   as string | undefined) ?? 'pack261';
 const BRANCH = (import.meta.env.GITHUB_BRANCH as string | undefined) ?? 'main';
 
 function toBase64(text: string): string {
@@ -19,8 +22,7 @@ function fromBase64(b64: string): string {
   return new TextDecoder().decode(bytes);
 }
 
-async function ghFetch(path: string, init: RequestInit = {}): Promise<Response> {
-  const token = import.meta.env.GITHUB_TOKEN as string | undefined;
+async function ghFetch(path: string, token: string | undefined, init: RequestInit = {}): Promise<Response> {
   const headers: Record<string, string> = {
     Accept: 'application/vnd.github.v3+json',
     'Content-Type': 'application/json',
@@ -37,8 +39,8 @@ export interface GHFile {
   content: string;
 }
 
-export async function getFile(path: string): Promise<GHFile | null> {
-  const res = await ghFetch(path);
+export async function getFile(path: string, token?: string): Promise<GHFile | null> {
+  const res = await ghFetch(path, token);
   if (!res.ok) return null;
   const data = (await res.json()) as { sha: string; content: string };
   return { sha: data.sha, content: fromBase64(data.content) };
@@ -50,6 +52,7 @@ export async function putFile(
   content: string,
   message: string,
   sha?: string,
+  token?: string,
 ): Promise<{ ok: boolean; error?: string }> {
   const body: Record<string, unknown> = {
     message,
@@ -57,7 +60,7 @@ export async function putFile(
     branch: BRANCH,
   };
   if (sha) body.sha = sha;
-  const res = await ghFetch(path, { method: 'PUT', body: JSON.stringify(body) });
+  const res = await ghFetch(path, token, { method: 'PUT', body: JSON.stringify(body) });
   if (res.ok) return { ok: true };
   const err = (await res.json().catch(() => ({}))) as { message?: string };
   return { ok: false, error: err.message ?? `HTTP ${res.status}` };
@@ -67,8 +70,9 @@ export async function deleteFile(
   path: string,
   sha: string,
   message: string,
+  token?: string,
 ): Promise<{ ok: boolean; error?: string }> {
-  const res = await ghFetch(path, {
+  const res = await ghFetch(path, token, {
     method: 'DELETE',
     body: JSON.stringify({ message, sha, branch: BRANCH }),
   });
@@ -156,8 +160,8 @@ export interface CalendarEvent {
 
 const CALENDAR_PATH = 'src/data/calendar.json';
 
-export async function getCalendar(): Promise<{ events: CalendarEvent[]; sha: string } | null> {
-  const file = await getFile(CALENDAR_PATH);
+export async function getCalendar(token?: string): Promise<{ events: CalendarEvent[]; sha: string } | null> {
+  const file = await getFile(CALENDAR_PATH, token);
   if (!file) return null;
   try {
     const events = JSON.parse(file.content) as CalendarEvent[];
@@ -171,9 +175,10 @@ export async function putCalendar(
   events: CalendarEvent[],
   sha: string,
   message: string,
+  token?: string,
 ): Promise<{ ok: boolean; error?: string }> {
   const content = JSON.stringify(events, null, 2) + '\n';
-  return putFile(CALENDAR_PATH, content, message, sha);
+  return putFile(CALENDAR_PATH, content, message, sha, token);
 }
 
 /** Generate a short unique ID for a new calendar event. */

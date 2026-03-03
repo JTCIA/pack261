@@ -4,6 +4,8 @@ import { putFile, buildDocMd, slugify } from '../../../lib/github.ts';
 
 export const prerender = false;
 
+const token = Astro.locals.runtime.env.GITHUB_TOKEN;
+
 let error = '';
 const today = new Date().toISOString().split('T')[0];
 
@@ -22,7 +24,7 @@ if (Astro.request.method === 'POST') {
     const dirSlug = slugify(title);
     const path = `src/content/docs/${dirSlug}/index.md`;
     const content = buildDocMd({ title, description, section, order, lastUpdated, body });
-    const result = await putFile(path, content, `Add doc: ${title}`);
+    const result = await putFile(path, content, `Add doc: ${title}`, undefined, token);
     if (result.ok) {
       return Astro.redirect('/admin/docs?saved=created');
     }
