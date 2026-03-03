@@ -57,7 +57,7 @@ export async function getFile(path: string, token?: string): Promise<GHFile | GH
     let message: string;
     try {
       const body = JSON.parse(text) as { message?: string };
-      message = body.message ?? text.slice(0, 200) || `HTTP ${res.status}`;
+      message = body.message ?? (text.slice(0, 200) || `HTTP ${res.status}`);
     } catch {
       message = text.slice(0, 200) || `HTTP ${res.status}`;
     }
