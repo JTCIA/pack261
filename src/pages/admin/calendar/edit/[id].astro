@@ -1,6 +1,6 @@
 ---
 import AdminLayout from '../../../../layouts/AdminLayout.astro';
-import { getCalendar, putCalendar } from '../../../../lib/github.ts';
+import { getCalendar, putCalendar, isGHError } from '../../../../lib/github.ts';
 import type { CalendarEvent } from '../../../../lib/github.ts';
 
 export const prerender = false;
@@ -11,11 +11,11 @@ const { id } = Astro.params;
 let error = '';
 
 // Load current calendar
-const cal = await getCalendar(token);
-
-if (!cal) {
+const rawCal = await getCalendar(token);
+if (!rawCal || isGHError(rawCal)) {
   return Astro.redirect('/admin/calendar');
 }
+const cal = rawCal;
 
 const eventIndex = cal.events.findIndex((e) => e.id === id);
 if (eventIndex < 0) {

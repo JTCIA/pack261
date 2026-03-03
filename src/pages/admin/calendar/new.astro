@@ -1,6 +1,6 @@
 ---
 import AdminLayout from '../../../layouts/AdminLayout.astro';
-import { getCalendar, putCalendar, calendarEventId } from '../../../lib/github.ts';
+import { getCalendar, putCalendar, calendarEventId, isGHError, ghErrorMessage } from '../../../lib/github.ts';
 import type { CalendarEvent } from '../../../lib/github.ts';
 
 export const prerender = false;
@@ -21,9 +21,9 @@ if (Astro.request.method === 'POST') {
   if (!date || !title) {
     error = 'Date and title are required.';
   } else {
-    const cal = await getCalendar(token);
-    if (!cal) {
-      error = 'Could not load calendar. Check that GITHUB_TOKEN is set.';
+    const raw = await getCalendar(token);
+    if (!raw || isGHError(raw)) {
+      error = ghErrorMessage(isGHError(raw) ? raw : null, token);
     } else {
       const newEvent: CalendarEvent = {
         id: calendarEventId(),
@@ -33,6 +33,7 @@ if (Astro.request.method === 'POST') {
         type,
         description,
       };
+      const cal = raw;
       const result = await putCalendar([...cal.events, newEvent], cal.sha, `Add calendar event: ${title}`, token);
       if (result.ok) {
         return Astro.redirect('/admin/calendar?saved=created');

@@ -1,7 +1,7 @@
 ---
 import AdminLayout from '../../../layouts/AdminLayout.astro';
 import { getCollection } from 'astro:content';
-import { deleteFile, getFile } from '../../../lib/github.ts';
+import { deleteFile, getFile, isGHError, ghErrorMessage } from '../../../lib/github.ts';
 
 const token = Astro.locals.runtime.env.GITHUB_TOKEN;
 
@@ -22,7 +22,7 @@ if (Astro.request.method === 'POST') {
     const slug = form.get('slug') as string;
     const path = `src/content/announcements/${slug}.md`;
     const file = await getFile(path, token);
-    if (file) {
+    if (file && !isGHError(file)) {
       const result = await deleteFile(path, file.sha, `Delete announcement: ${slug}`, token);
       if (result.ok) {
         flash = 'Announcement deleted. Site rebuilds in ~2 minutes.';
@@ -32,7 +32,7 @@ if (Astro.request.method === 'POST') {
         flashType = 'error';
       }
     } else {
-      flash = 'File not found on GitHub.';
+      flash = isGHError(file) ? ghErrorMessage(file, token) : 'File not found on GitHub.';
       flashType = 'error';
     }
   }
