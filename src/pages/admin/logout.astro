@@ -1,8 +1,6 @@
 ---
 export const prerender = false;
 
-import { COOKIE_NAME } from '../../middleware.ts';
-
-Astro.cookies.delete(COOKIE_NAME, { path: '/' });
-return Astro.redirect('/admin/login');
+// Cloudflare Access logout — clears the CF_Authorization cookie and redirects to the login page.
+return Astro.redirect('/cdn-cgi/access/logout');
 ---
