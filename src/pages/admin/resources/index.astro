@@ -2,66 +2,21 @@
 export const prerender = false;
 
 import AdminLayout from '../../../layouts/AdminLayout.astro';
-
-const resources = [
-  {
-    section: 'BSA Official Resources',
-    items: [
-      { title: 'BSA Guide to Safe Scouting', url: 'https://www.scouting.org/health-and-safety/gss/', desc: 'Official safety policies and procedures for all BSA activities', icon: 'shield' },
-      { title: 'Cub Scout Program Resources', url: 'https://www.scouting.org/programs/cub-scouts/resources/', desc: 'Adventure requirements, leader guides, and program materials', icon: 'book' },
-      { title: 'Insignia Guide', url: 'https://www.scouting.org/resources/insignia-guide/', desc: 'Official uniform and awards placement guide', icon: 'badge' },
-      { title: 'Youth Protection Training', url: 'https://my.scouting.org/', desc: 'Complete required YPT at my.Scouting.org (annual requirement)', icon: 'shield' },
-    ],
-  },
-  {
-    section: 'Tools & Applications',
-    items: [
-      { title: 'Scoutbook', url: 'https://scoutbook.scouting.org/', desc: 'Track scout advancement, log activities, and communicate with families', icon: 'check' },
-      { title: 'my.Scouting.org', url: 'https://my.scouting.org/', desc: 'Manage your registration, training, and leader position', icon: 'user' },
-      { title: 'Internet Recharter', url: 'https://my.scouting.org/', desc: 'Manage annual pack recharter (via my.Scouting.org)', icon: 'refresh' },
-      { title: 'Online Store', url: 'https://www.scoutshop.org/', desc: 'Official BSA merchandise, uniforms, and advancement awards', icon: 'cart' },
-    ],
-  },
-  {
-    section: 'Pack Forms & Templates',
-    items: [
-      { title: 'Annual Health & Medical Record (Parts A&B)', url: 'https://filestore.scouting.org/filestore/HealthSafety/pdf/680-001_AB.pdf', desc: 'Required for all scouts at day activities and meetings', icon: 'document' },
-      { title: 'Annual Health & Medical Record (Part C)', url: 'https://filestore.scouting.org/filestore/HealthSafety/pdf/680-001_C.pdf', desc: 'Required for camping events over 72 hours (needs physician signature)', icon: 'document' },
-      { title: 'Talent Release Form', url: 'https://filestore.scouting.org/filestore/mission/Marketing/pdf/512-827.pdf', desc: 'Photo and media release for scouts', icon: 'document' },
-      { title: 'Tour and Activity Plan', url: 'https://scoutingevent.com/', desc: 'Required for trips over 500 miles or high-adventure activities', icon: 'map' },
-    ],
-  },
-  {
-    section: 'Training & Development',
-    items: [
-      { title: 'Den Leader Training (online)', url: 'https://my.scouting.org/', desc: 'Position-specific training for new den leaders', icon: 'academic' },
-      { title: 'University of Scouting', url: 'https://www.scouting.org/training/', desc: 'Advanced training opportunities for experienced leaders', icon: 'academic' },
-      { title: 'Wood Badge', url: 'https://www.scouting.org/training/adult/wood-badge/', desc: 'Premier leadership training for adult volunteers', icon: 'star' },
-      { title: 'Baloo Training', url: 'https://my.scouting.org/', desc: 'Required for any leader taking cubs on overnight camping', icon: 'tent' },
-    ],
-  },
-];
-
-const iconPaths: Record<string, string> = {
-  shield: 'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z',
-  book: 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253',
-  badge: 'M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z',
-  check: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4',
-  user: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z',
-  refresh: 'M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15',
-  cart: 'M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z',
-  document: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z',
-  map: 'M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7',
-  academic: 'M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222',
-  star: 'M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z',
-  tent: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6',
-};
 ---
 
 <AdminLayout title="Resources" activeSection="resources">
 
-  <div class="mb-6">
+  <div class="flex items-center justify-between mb-6">
     <p class="text-sm text-gray-500">Quick access to BSA forms, training, tools, and reference materials</p>
+    <div class="flex items-center gap-3">
+      <span id="resource-status" class="text-xs text-gray-400"></span>
+      <button id="add-resource-btn" class="flex items-center gap-1.5 text-sm bg-scout-blue text-white px-3 py-1.5 rounded-lg hover:bg-scout-blue-mid transition-colors">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+        </svg>
+        Add Resource
+      </button>
+    </div>
   </div>
 
   <!-- Search -->
@@ -69,47 +24,12 @@ const iconPaths: Record<string, string> = {
     <svg class="absolute left-3 top-2.5 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
     </svg>
-    <input
-      type="search"
-      id="resource-search"
-      placeholder="Search resources..."
-      class="w-full border border-gray-200 rounded-lg pl-9 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-scout-blue bg-white"
-    />
+    <input type="search" id="resource-search" placeholder="Search resources..."
+      class="w-full border border-gray-200 rounded-lg pl-9 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-scout-blue bg-white" />
   </div>
 
   <div id="resources-list" class="space-y-8">
-    {resources.map((section) => (
-      <div class="resource-section">
-        <h2 class="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">{section.section}</h2>
-        <div class="grid sm:grid-cols-2 gap-3">
-          {section.items.map((item) => (
-            <a
-              href={item.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              data-title={item.title.toLowerCase()}
-              data-desc={item.desc.toLowerCase()}
-              class="resource-item flex items-start gap-3 bg-white border border-gray-200 rounded-xl p-4 hover:border-scout-blue hover:bg-scout-blue-pale transition-colors group"
-            >
-              <div class="w-9 h-9 bg-scout-blue-pale rounded-lg flex items-center justify-center flex-shrink-0 group-hover:bg-scout-blue transition-colors">
-                <svg class="w-4 h-4 text-scout-blue group-hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d={iconPaths[item.icon] ?? iconPaths.document} />
-                </svg>
-              </div>
-              <div class="flex-1 min-w-0">
-                <div class="flex items-center justify-between gap-2">
-                  <p class="text-sm font-medium text-gray-900 group-hover:text-scout-blue transition-colors">{item.title}</p>
-                  <svg class="w-3.5 h-3.5 text-gray-300 group-hover:text-scout-blue flex-shrink-0 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                  </svg>
-                </div>
-                <p class="text-xs text-gray-500 mt-0.5 leading-relaxed">{item.desc}</p>
-              </div>
-            </a>
-          ))}
-        </div>
-      </div>
-    ))}
+    <p class="text-sm text-gray-400">Loading resources…</p>
   </div>
 
   <div id="no-results" class="hidden text-center py-12 text-gray-400">
@@ -119,31 +39,301 @@ const iconPaths: Record<string, string> = {
     <p class="text-sm">No resources match your search.</p>
   </div>
 
+  <!-- Add/Edit modal -->
+  <div id="resource-modal" class="hidden fixed inset-0 bg-black bg-opacity-40 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-xl w-full max-w-lg">
+      <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+        <h3 class="font-semibold text-gray-900" id="resource-modal-title">Add Resource</h3>
+        <button id="close-resource-modal" class="text-gray-400 hover:text-gray-600">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+      <form id="resource-form" class="p-5 space-y-4">
+        <input type="hidden" id="resource-id" />
+        <div class="grid grid-cols-2 gap-3">
+          <div class="col-span-2">
+            <label class="block text-sm font-medium text-gray-700 mb-1">Title <span class="text-red-400">*</span></label>
+            <input type="text" id="resource-title" required
+              class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-scout-blue"
+              placeholder="e.g. BSA Guide to Safe Scouting" />
+          </div>
+          <div class="col-span-2">
+            <label class="block text-sm font-medium text-gray-700 mb-1">URL <span class="text-red-400">*</span></label>
+            <input type="url" id="resource-url" required
+              class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-scout-blue"
+              placeholder="https://…" />
+          </div>
+          <div class="col-span-2">
+            <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+            <textarea id="resource-desc" rows="2"
+              class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-scout-blue resize-none"
+              placeholder="Brief description…"></textarea>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Section <span class="text-red-400">*</span></label>
+            <input type="text" id="resource-section" required list="section-options"
+              class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-scout-blue"
+              placeholder="Section name" />
+            <datalist id="section-options"></datalist>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Icon</label>
+            <select id="resource-icon"
+              class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-scout-blue">
+              <option value="document">Document</option>
+              <option value="shield">Shield</option>
+              <option value="book">Book</option>
+              <option value="badge">Badge</option>
+              <option value="check">Checklist</option>
+              <option value="user">Person</option>
+              <option value="refresh">Refresh</option>
+              <option value="cart">Cart</option>
+              <option value="map">Map</option>
+              <option value="academic">Academic</option>
+              <option value="star">Star</option>
+              <option value="tent">Tent</option>
+            </select>
+          </div>
+        </div>
+        <div class="flex gap-2 pt-1">
+          <button type="submit" class="flex-1 bg-scout-blue text-white py-2 rounded-lg text-sm font-semibold hover:bg-scout-blue-mid transition-colors">Save</button>
+          <button type="button" id="delete-resource-btn" class="hidden px-4 py-2 rounded-lg text-sm font-medium text-red-600 border border-red-200 hover:bg-red-50 transition-colors">Delete</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
 </AdminLayout>
 
 <script>
-  const searchInput = document.getElementById('resource-search') as HTMLInputElement;
-  const items = document.querySelectorAll<HTMLAnchorElement>('.resource-item');
-  const sections = document.querySelectorAll<HTMLDivElement>('.resource-section');
-  const noResults = document.getElementById('no-results');
+  interface Resource { id: string; section: string; title: string; url: string; desc: string; icon: string; }
 
-  searchInput?.addEventListener('input', () => {
-    const query = searchInput.value.toLowerCase().trim();
-    let visible = 0;
+  const iconPaths: Record<string, string> = {
+    shield:   'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z',
+    book:     'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253',
+    badge:    'M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z',
+    check:    'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4',
+    user:     'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z',
+    refresh:  'M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15',
+    cart:     'M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z',
+    document: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z',
+    map:      'M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7',
+    academic: 'M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0112 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222',
+    star:     'M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z',
+    tent:     'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6',
+  };
 
-    items.forEach(item => {
-      const title = item.dataset.title ?? '';
-      const desc = item.dataset.desc ?? '';
-      const matches = !query || title.includes(query) || desc.includes(query);
-      item.style.display = matches ? '' : 'none';
-      if (matches) visible++;
+  let resources: Resource[] = [];
+  let currentSha = '';
+  let editingId: string | null = null;
+  let saveTimer: ReturnType<typeof setTimeout> | null = null;
+  let searchQuery = '';
+
+  const statusEl = document.getElementById('resource-status')!;
+  function setStatus(text: string, color: string) {
+    statusEl.textContent = text;
+    statusEl.className = `text-xs ${color}`;
+  }
+
+  function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2); }
+  function esc(s: string) {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  async function loadResources() {
+    setStatus('Loading…', 'text-gray-400');
+    try {
+      const res = await fetch('/api/resources');
+      const data = await res.json() as { resources: Resource[]; sha: string; error?: string };
+      if (!res.ok) throw new Error(data.error ?? `HTTP ${res.status}`);
+      resources = data.resources;
+      currentSha = data.sha;
+      setStatus('', '');
+    } catch (err) {
+      setStatus('Failed to load', 'text-red-500');
+      console.error('Resources load error:', err);
+    }
+    renderResources();
+  }
+
+  async function saveResources() {
+    setStatus('Saving…', 'text-gray-400');
+    try {
+      const res = await fetch('/api/resources', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ resources, sha: currentSha }),
+      });
+      const data = await res.json() as { ok: boolean; sha?: string; error?: string };
+      if (!res.ok) throw new Error(data.error ?? `HTTP ${res.status}`);
+      if (data.sha) currentSha = data.sha;
+      setStatus('Saved', 'text-green-600');
+      setTimeout(() => setStatus('', ''), 2000);
+    } catch (err) {
+      setStatus('Save failed', 'text-red-500');
+      console.error('Resources save error:', err);
+    }
+  }
+
+  function save() {
+    if (saveTimer) clearTimeout(saveTimer);
+    saveTimer = setTimeout(saveResources, 300);
+  }
+
+  function renderResources() {
+    const container = document.getElementById('resources-list')!;
+    const noResults = document.getElementById('no-results')!;
+    const q = searchQuery.toLowerCase();
+
+    // Group by section (preserving order of first appearance)
+    const sectionOrder: string[] = [];
+    const grouped: Record<string, Resource[]> = {};
+    for (const r of resources) {
+      if (!grouped[r.section]) { grouped[r.section] = []; sectionOrder.push(r.section); }
+      if (!q || r.title.toLowerCase().includes(q) || r.desc.toLowerCase().includes(q)) {
+        grouped[r.section].push(r);
+      }
+    }
+
+    const visibleSections = sectionOrder.filter(s => grouped[s]?.length > 0);
+
+    if (visibleSections.length === 0 && resources.length > 0) {
+      container.innerHTML = '';
+      noResults.classList.remove('hidden');
+      return;
+    }
+    noResults.classList.add('hidden');
+
+    if (resources.length === 0) {
+      container.innerHTML = '<p class="text-sm text-gray-400">No resources yet. Click "Add Resource" to get started.</p>';
+      return;
+    }
+
+    container.innerHTML = visibleSections.map(section => `
+      <div class="resource-section">
+        <h2 class="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">${esc(section)}</h2>
+        <div class="grid sm:grid-cols-2 gap-3">
+          ${grouped[section].map(item => `
+            <div class="relative group">
+              <a href="${esc(item.url)}" target="_blank" rel="noopener noreferrer"
+                class="flex items-start gap-3 bg-white border border-gray-200 rounded-xl p-4 hover:border-scout-blue hover:bg-scout-blue-pale transition-colors group/link block">
+                <div class="w-9 h-9 bg-scout-blue-pale rounded-lg flex items-center justify-center flex-shrink-0 group-hover/link:bg-scout-blue transition-colors">
+                  <svg class="w-4 h-4 text-scout-blue group-hover/link:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="${iconPaths[item.icon] ?? iconPaths.document}" />
+                  </svg>
+                </div>
+                <div class="flex-1 min-w-0 pr-6">
+                  <div class="flex items-center justify-between gap-2">
+                    <p class="text-sm font-medium text-gray-900 group-hover/link:text-scout-blue transition-colors">${esc(item.title)}</p>
+                    <svg class="w-3.5 h-3.5 text-gray-300 group-hover/link:text-scout-blue flex-shrink-0 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                    </svg>
+                  </div>
+                  <p class="text-xs text-gray-500 mt-0.5 leading-relaxed">${esc(item.desc)}</p>
+                </div>
+              </a>
+              <button data-id="${item.id}"
+                class="edit-resource-btn absolute top-3 right-3 opacity-0 group-hover:opacity-100 bg-white border border-gray-200 text-gray-400 hover:text-gray-700 hover:border-gray-300 p-1 rounded-md transition-all shadow-sm"
+                title="Edit">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                </svg>
+              </button>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `).join('');
+
+    container.querySelectorAll<HTMLButtonElement>('.edit-resource-btn').forEach(btn => {
+      btn.addEventListener('click', e => {
+        e.preventDefault();
+        const r = resources.find(x => x.id === btn.dataset.id);
+        if (r) openEdit(r);
+      });
     });
 
-    sections.forEach(section => {
-      const visibleItems = section.querySelectorAll('.resource-item:not([style*="none"])');
-      section.style.display = visibleItems.length ? '' : 'none';
-    });
+    // Update section datalist for the modal
+    updateSectionDatalist();
+  }
 
-    noResults?.classList.toggle('hidden', visible > 0);
+  function updateSectionDatalist() {
+    const dl = document.getElementById('section-options')!;
+    const sections = [...new Set(resources.map(r => r.section))];
+    dl.innerHTML = sections.map(s => `<option value="${esc(s)}">`).join('');
+  }
+
+  // Search
+  document.getElementById('resource-search')?.addEventListener('input', (e) => {
+    searchQuery = (e.target as HTMLInputElement).value.trim();
+    renderResources();
   });
+
+  // Modal
+  const modal   = document.getElementById('resource-modal')!;
+  const form    = document.getElementById('resource-form') as HTMLFormElement;
+  const mTitle  = document.getElementById('resource-modal-title')!;
+  const delBtn  = document.getElementById('delete-resource-btn')!;
+
+  function openAdd() {
+    editingId = null;
+    mTitle.textContent = 'Add Resource';
+    form.reset();
+    delBtn.classList.add('hidden');
+    updateSectionDatalist();
+    modal.classList.remove('hidden');
+    (document.getElementById('resource-title') as HTMLInputElement).focus();
+  }
+
+  function openEdit(r: Resource) {
+    editingId = r.id;
+    mTitle.textContent = 'Edit Resource';
+    (document.getElementById('resource-title') as HTMLInputElement).value = r.title;
+    (document.getElementById('resource-url') as HTMLInputElement).value = r.url;
+    (document.getElementById('resource-desc') as HTMLTextAreaElement).value = r.desc;
+    (document.getElementById('resource-section') as HTMLInputElement).value = r.section;
+    (document.getElementById('resource-icon') as HTMLSelectElement).value = r.icon;
+    delBtn.classList.remove('hidden');
+    updateSectionDatalist();
+    modal.classList.remove('hidden');
+  }
+
+  function closeModal() { modal.classList.add('hidden'); form.reset(); editingId = null; }
+
+  document.getElementById('add-resource-btn')!.addEventListener('click', openAdd);
+  document.getElementById('close-resource-modal')!.addEventListener('click', closeModal);
+  modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
+
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+    const r: Resource = {
+      id: editingId ?? uid(),
+      title:   (document.getElementById('resource-title')   as HTMLInputElement).value.trim(),
+      url:     (document.getElementById('resource-url')     as HTMLInputElement).value.trim(),
+      desc:    (document.getElementById('resource-desc')    as HTMLTextAreaElement).value.trim(),
+      section: (document.getElementById('resource-section') as HTMLInputElement).value.trim(),
+      icon:    (document.getElementById('resource-icon')    as HTMLSelectElement).value,
+    };
+    if (editingId) {
+      resources = resources.map(x => x.id === editingId ? r : x);
+    } else {
+      resources.push(r);
+    }
+    save();
+    renderResources();
+    closeModal();
+  });
+
+  delBtn.addEventListener('click', () => {
+    if (editingId && confirm('Delete this resource?')) {
+      resources = resources.filter(x => x.id !== editingId);
+      save();
+      renderResources();
+      closeModal();
+    }
+  });
+
+  loadResources();
 </script>

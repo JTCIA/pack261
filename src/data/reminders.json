@@ -1,0 +1,6 @@
+[
+  { "id": "r1", "type": "warning", "text": "Youth Protection Training (YPT) must be renewed annually. Check your expiration at my.scouting.org." },
+  { "id": "r2", "type": "info", "text": "Two-deep leadership required at ALL scout activities — in person and virtual." },
+  { "id": "r3", "type": "info", "text": "Record advancement completions in Scoutbook promptly after each meeting." },
+  { "id": "r4", "type": "warning", "text": "All expenditures over $50 require committee approval before purchasing." }
+]
