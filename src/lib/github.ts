@@ -27,7 +27,7 @@ async function ghFetch(path: string, token: string | undefined, init: RequestIni
     Accept: 'application/vnd.github.v3+json',
     'Content-Type': 'application/json',
   };
-  if (token) headers.Authorization = `Bearer ${token}`;
+  if (token) headers.Authorization = `Bearer ${token.trim()}`;
   return fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${path}`, {
     ...init,
     headers: { ...headers, ...((init.headers as Record<string, string>) ?? {}) },
@@ -53,8 +53,15 @@ export async function getFile(path: string, token?: string): Promise<GHFile | GH
     return null;
   }
   if (!res.ok) {
-    const body = await res.json().catch(() => ({})) as { message?: string };
-    return { status: res.status, message: body.message ?? `HTTP ${res.status}` };
+    const text = await res.text().catch(() => '');
+    let message: string;
+    try {
+      const body = JSON.parse(text) as { message?: string };
+      message = body.message ?? text.slice(0, 200) || `HTTP ${res.status}`;
+    } catch {
+      message = text.slice(0, 200) || `HTTP ${res.status}`;
+    }
+    return { status: res.status, message };
   }
   const data = (await res.json()) as { sha: string; content: string };
   return { sha: data.sha, content: fromBase64(data.content) };
