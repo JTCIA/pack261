@@ -1,0 +1,115 @@
+---
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import { getCalendar, putCalendar, calendarEventId } from '../../../lib/github.ts';
+import type { CalendarEvent } from '../../../lib/github.ts';
+
+export const prerender = false;
+
+let error = '';
+const today = new Date().toISOString().split('T')[0];
+
+if (Astro.request.method === 'POST') {
+  const form = await Astro.request.formData();
+  const date        = (form.get('date')        as string ?? today).trim();
+  const title       = (form.get('title')       as string ?? '').trim();
+  const location    = (form.get('location')    as string ?? '').trim();
+  const type        = (form.get('type')        as string ?? 'event') as CalendarEvent['type'];
+  const description = (form.get('description') as string ?? '').trim();
+
+  if (!date || !title) {
+    error = 'Date and title are required.';
+  } else {
+    const cal = await getCalendar();
+    if (!cal) {
+      error = 'Could not load calendar. Check that GITHUB_TOKEN is set.';
+    } else {
+      const newEvent: CalendarEvent = {
+        id: calendarEventId(),
+        date,
+        title,
+        location,
+        type,
+        description,
+      };
+      const result = await putCalendar([...cal.events, newEvent], cal.sha, `Add calendar event: ${title}`);
+      if (result.ok) {
+        return Astro.redirect('/admin/calendar?saved=created');
+      }
+      error = `Could not save: ${result.error ?? 'GitHub API error'}`;
+    }
+  }
+}
+---
+
+<AdminLayout title="New Calendar Event" activeSection="calendar">
+
+  <nav class="flex items-center gap-1 text-sm text-gray-400 mb-6">
+    <a href="/admin/calendar" class="hover:text-scout-blue transition-colors">Calendar</a>
+    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+    </svg>
+    <span class="text-gray-700 font-medium">New Event</span>
+  </nav>
+
+  {error && (
+    <div class="mb-5 px-4 py-3 bg-red-50 border border-red-200 text-red-800 rounded-lg text-sm flex items-start gap-2">
+      <svg class="w-4 h-4 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+      </svg>
+      {error}
+    </div>
+  )}
+
+  <form method="post" class="space-y-5 max-w-2xl">
+
+    <div class="grid sm:grid-cols-2 gap-4">
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Date <span class="text-red-400">*</span></label>
+        <input type="date" name="date" required value={today}
+          class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-scout-blue" />
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Type <span class="text-red-400">*</span></label>
+        <select name="type"
+          class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-scout-blue">
+          <option value="meeting">Meeting</option>
+          <option value="camping">Camping</option>
+          <option value="event">Event</option>
+          <option value="deadline">Deadline</option>
+          <option value="special">Special</option>
+        </select>
+      </div>
+
+      <div class="sm:col-span-2">
+        <label class="block text-sm font-medium text-gray-700 mb-1">Title <span class="text-red-400">*</span></label>
+        <input type="text" name="title" required
+          class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-scout-blue"
+          placeholder="e.g. Pinewood Derby" />
+      </div>
+
+      <div class="sm:col-span-2">
+        <label class="block text-sm font-medium text-gray-700 mb-1">Location</label>
+        <input type="text" name="location"
+          class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-scout-blue"
+          placeholder="e.g. Community Center" />
+      </div>
+
+      <div class="sm:col-span-2">
+        <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+        <textarea name="description" rows="3"
+          class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-scout-blue resize-y"
+          placeholder="Brief details about the event..."></textarea>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-3 pt-1">
+      <button type="submit"
+        class="bg-scout-blue text-white px-5 py-2 rounded-lg text-sm font-semibold hover:bg-scout-blue-mid transition-colors">
+        Add to Calendar
+      </button>
+      <a href="/admin/calendar" class="text-sm text-gray-500 hover:text-gray-700 transition-colors">Cancel</a>
+    </div>
+  </form>
+
+</AdminLayout>
