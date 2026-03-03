@@ -26,6 +26,7 @@ async function ghFetch(path: string, token: string | undefined, init: RequestIni
   const headers: Record<string, string> = {
     Accept: 'application/vnd.github.v3+json',
     'Content-Type': 'application/json',
+    'User-Agent': 'pack261-admin/1.0',
   };
   if (token) headers.Authorization = `Bearer ${token.trim()}`;
   return fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${path}`, {
