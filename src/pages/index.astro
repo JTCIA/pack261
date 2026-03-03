@@ -67,24 +67,26 @@ function formatDate(date: Date) {
 
         <div class="space-y-4">
           {announcements.map((post) => (
-            <article class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow">
-              <div class="flex items-start justify-between gap-3 mb-2">
-                <div class="flex items-center gap-2 flex-wrap">
-                  {post.data.pinned && (
-                    <span class="bg-scout-gold text-scout-blue text-xs font-semibold px-2 py-0.5 rounded-full">
-                      Pinned
+            <a href={`/announcements#${post.slug}`} class="block group">
+              <article class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm group-hover:shadow-md group-hover:border-scout-blue transition-all">
+                <div class="flex items-start justify-between gap-3 mb-2">
+                  <div class="flex items-center gap-2 flex-wrap">
+                    {post.data.pinned && (
+                      <span class="bg-scout-gold text-scout-blue text-xs font-semibold px-2 py-0.5 rounded-full">
+                        Pinned
+                      </span>
+                    )}
+                    <span class={`text-xs font-medium px-2 py-0.5 rounded-full capitalize ${categoryColors[post.data.category]}`}>
+                      {post.data.category}
                     </span>
-                  )}
-                  <span class={`text-xs font-medium px-2 py-0.5 rounded-full capitalize ${categoryColors[post.data.category]}`}>
-                    {post.data.category}
-                  </span>
+                  </div>
+                  <time class="text-xs text-gray-400 flex-shrink-0">{formatDate(post.data.date)}</time>
                 </div>
-                <time class="text-xs text-gray-400 flex-shrink-0">{formatDate(post.data.date)}</time>
-              </div>
-              <h3 class="font-semibold text-gray-900 text-lg mb-1">{post.data.title}</h3>
-              <p class="text-gray-600 text-sm leading-relaxed">{post.data.summary}</p>
-              <p class="text-xs text-gray-400 mt-3">— {post.data.author}</p>
-            </article>
+                <h3 class="font-semibold text-gray-900 text-lg mb-1 group-hover:text-scout-blue transition-colors">{post.data.title}</h3>
+                <p class="text-gray-600 text-sm leading-relaxed">{post.data.summary}</p>
+                <p class="text-xs text-scout-blue-mid font-medium mt-3">Read full announcement &rarr;</p>
+              </article>
+            </a>
           ))}
         </div>
       </div>
