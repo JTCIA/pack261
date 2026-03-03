@@ -12,7 +12,7 @@ Calling all scouts — it's popcorn time! Our annual Trail's End Popcorn fundrai
 ## Why Sell Popcorn?
 
 - **50% of proceeds** stay with our pack to fund activities, awards, and campouts
-- Scouts who sell **$300+** earn their camp fees paid for next summer
+- Scouts who sell **$300+** earn a camping trip credit
 - Top sellers earn prizes including gift cards, electronics, and a trip to Scout camp
 
 ## How It Works
