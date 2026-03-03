@@ -1,14 +1,98 @@
 [
-  { "id": "m9k2a1", "date": "2025-10-07", "title": "Pack Meeting", "location": "Community Center", "type": "meeting", "description": "Monthly pack meeting — bring your den projects!" },
-  { "id": "m9k2a2", "date": "2025-10-10", "title": "Fall Campout (Day 1)", "location": "Eagle Creek Campground", "type": "camping", "description": "Arrive by 4:00 PM. Site B." },
-  { "id": "m9k2a3", "date": "2025-10-11", "title": "Fall Campout (Day 2)", "location": "Eagle Creek Campground", "type": "camping", "description": "Saturday hike, archery, campfire." },
-  { "id": "m9k2a4", "date": "2025-10-12", "title": "Fall Campout (Day 3)", "location": "Eagle Creek Campground", "type": "camping", "description": "Checkout by noon." },
-  { "id": "m9k2a5", "date": "2025-10-25", "title": "Popcorn Orders Due", "location": "", "type": "deadline", "description": "All Trail's End popcorn orders must be submitted today." },
-  { "id": "m9k2a6", "date": "2025-11-04", "title": "Pack Meeting", "location": "Community Center", "type": "meeting", "description": "Monthly pack meeting" },
-  { "id": "m9k2a7", "date": "2025-11-10", "title": "Popcorn Pickup", "location": "Community Center", "type": "event", "description": "Distribute popcorn orders to families." },
-  { "id": "m9k2a8", "date": "2025-12-02", "title": "Pack Meeting — Holiday Party", "location": "Community Center", "type": "meeting", "description": "Annual holiday party! Bring a small wrapped gift for the gift exchange." },
-  { "id": "m9k2a9", "date": "2026-01-06", "title": "Pack Meeting", "location": "Community Center", "type": "meeting", "description": "Monthly pack meeting — Pinewood Derby car pickup" },
-  { "id": "m9k2b1", "date": "2026-01-17", "title": "Pinewood Derby", "location": "Community Center", "type": "special", "description": "Race day! Weigh-in at 9:00 AM, races begin at 10:00 AM." },
-  { "id": "m9k2b2", "date": "2026-02-03", "title": "Pack Meeting", "location": "Community Center", "type": "meeting", "description": "Monthly pack meeting" },
-  { "id": "m9k2b3", "date": "2026-02-14", "title": "Blue & Gold Banquet", "location": "Community Center", "type": "special", "description": "Annual Blue & Gold celebration! Dinner, rank advancements, and Arrow of Light crossovers." }
+  {
+    "id": "m9k2a1",
+    "date": "2025-10-07",
+    "title": "Pack Meeting",
+    "location": "Community Center",
+    "type": "meeting",
+    "description": "Monthly pack meeting — bring your den projects!"
+  },
+  {
+    "id": "m9k2a2",
+    "date": "2025-10-10",
+    "title": "Fall Campout (Day 1)",
+    "location": "Eagle Creek Campground",
+    "type": "camping",
+    "description": "Arrive by 4:00 PM. Site B."
+  },
+  {
+    "id": "m9k2a3",
+    "date": "2025-10-11",
+    "title": "Fall Campout (Day 2)",
+    "location": "Eagle Creek Campground",
+    "type": "camping",
+    "description": "Saturday hike, archery, campfire."
+  },
+  {
+    "id": "m9k2a4",
+    "date": "2025-10-12",
+    "title": "Fall Campout (Day 3)",
+    "location": "Eagle Creek Campground",
+    "type": "camping",
+    "description": "Checkout by noon."
+  },
+  {
+    "id": "m9k2a5",
+    "date": "2025-10-25",
+    "title": "Popcorn Orders Due",
+    "location": "",
+    "type": "deadline",
+    "description": "All Trail's End popcorn orders must be submitted today."
+  },
+  {
+    "id": "m9k2a6",
+    "date": "2025-11-04",
+    "title": "Pack Meeting",
+    "location": "Community Center",
+    "type": "meeting",
+    "description": "Monthly pack meeting"
+  },
+  {
+    "id": "m9k2a7",
+    "date": "2025-11-10",
+    "title": "Popcorn Pickup",
+    "location": "Community Center",
+    "type": "event",
+    "description": "Distribute popcorn orders to families."
+  },
+  {
+    "id": "m9k2a8",
+    "date": "2025-12-02",
+    "title": "Pack Meeting — Holiday Party",
+    "location": "Community Center",
+    "type": "meeting",
+    "description": "Annual holiday party! Bring a small wrapped gift for the gift exchange."
+  },
+  {
+    "id": "m9k2a9",
+    "date": "2026-01-06",
+    "title": "Pack Meeting",
+    "location": "Community Center",
+    "type": "meeting",
+    "description": "Monthly pack meeting — Pinewood Derby car pickup"
+  },
+  {
+    "id": "m9k2b1",
+    "date": "2026-01-17",
+    "title": "Pinewood Derby",
+    "location": "Community Center",
+    "type": "special",
+    "description": "Race day! Weigh-in at 9:00 AM, races begin at 10:00 AM."
+  },
+  {
+    "id": "m9k2b2",
+    "date": "2026-02-03",
+    "title": "Pack Meeting",
+    "location": "Community Center",
+    "type": "meeting",
+    "description": "Monthly pack meeting"
+  },
+  {
+    "id": "m9k2b3",
+    "date": "2026-02-14",
+    "title": "Blue & Gold Banquet",
+    "location": "Community Center",
+    "type": "special",
+    "description": "Annual Blue & Gold celebration! Dinner, rank advancements, and Arrow of Light crossovers."
+  }
 ]
