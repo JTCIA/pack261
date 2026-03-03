@@ -6,7 +6,7 @@
 
 const OWNER  = (import.meta.env.GITHUB_OWNER  as string | undefined) ?? 'JTCIA';
 const REPO   = (import.meta.env.GITHUB_REPO   as string | undefined) ?? 'pack261';
-const BRANCH = (import.meta.env.GITHUB_BRANCH as string | undefined) ?? 'main';
+const BRANCH = (import.meta.env.GITHUB_BRANCH as string | undefined) ?? 'claude/setup-pack261-site-qzPsJ';
 
 function toBase64(text: string): string {
   const bytes = new TextEncoder().encode(text);
