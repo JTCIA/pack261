@@ -48,7 +48,7 @@ function formatDate(date: Date) {
       {allAnnouncements.map(async (post) => {
         const { Content } = await post.render();
         return (
-          <article data-category={post.data.category} class="announcement-card bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+          <article id={post.slug} data-category={post.data.category} class="announcement-card bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden scroll-mt-28">
             <div class="p-6">
               <div class="flex items-start justify-between gap-4 mb-3">
                 <div class="flex items-center gap-2 flex-wrap">
@@ -105,6 +105,17 @@ function formatDate(date: Date) {
 <script>
   const filterBtns = document.querySelectorAll<HTMLButtonElement>('.filter-btn');
   const cards = document.querySelectorAll<HTMLElement>('.announcement-card');
+
+  // Auto-open and scroll to announcement when navigating via hash
+  const hash = window.location.hash.slice(1);
+  if (hash) {
+    const target = document.getElementById(hash);
+    if (target) {
+      const details = target.querySelector('details');
+      if (details) details.open = true;
+      setTimeout(() => target.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
+    }
+  }
 
   filterBtns.forEach(btn => {
     btn.addEventListener('click', () => {
