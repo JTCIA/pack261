@@ -264,3 +264,68 @@ export async function putPlanner(
   const content = JSON.stringify(tasks, null, 2) + '\n';
   return putFile(PLANNER_PATH, content, message, sha, token);
 }
+
+// ── Reminders helpers ─────────────────────────────────────────────────────────
+
+export interface Reminder {
+  id: string;
+  type: 'warning' | 'info';
+  text: string;
+}
+
+const REMINDERS_PATH = 'src/data/reminders.json';
+
+export async function getReminders(token?: string): Promise<{ reminders: Reminder[]; sha: string } | GHError | null> {
+  const file = await getFile(REMINDERS_PATH, token);
+  if (!file || isGHError(file)) return file;
+  try {
+    const reminders = JSON.parse(file.content) as Reminder[];
+    return { reminders, sha: file.sha };
+  } catch {
+    return { status: 0, message: 'reminders.json contains invalid JSON' };
+  }
+}
+
+export async function putReminders(
+  reminders: Reminder[],
+  sha: string,
+  message: string,
+  token?: string,
+): Promise<{ ok: boolean; error?: string }> {
+  const content = JSON.stringify(reminders, null, 2) + '\n';
+  return putFile(REMINDERS_PATH, content, message, sha, token);
+}
+
+// ── Resources helpers ─────────────────────────────────────────────────────────
+
+export interface Resource {
+  id: string;
+  section: string;
+  title: string;
+  url: string;
+  desc: string;
+  icon: string;
+}
+
+const RESOURCES_PATH = 'src/data/resources.json';
+
+export async function getResources(token?: string): Promise<{ resources: Resource[]; sha: string } | GHError | null> {
+  const file = await getFile(RESOURCES_PATH, token);
+  if (!file || isGHError(file)) return file;
+  try {
+    const resources = JSON.parse(file.content) as Resource[];
+    return { resources, sha: file.sha };
+  } catch {
+    return { status: 0, message: 'resources.json contains invalid JSON' };
+  }
+}
+
+export async function putResources(
+  resources: Resource[],
+  sha: string,
+  message: string,
+  token?: string,
+): Promise<{ ok: boolean; error?: string }> {
+  const content = JSON.stringify(resources, null, 2) + '\n';
+  return putFile(RESOURCES_PATH, content, message, sha, token);
+}
