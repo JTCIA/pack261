@@ -1,6 +1,6 @@
 ---
 import AdminLayout from '../../../../layouts/AdminLayout.astro';
-import { getFile, putFile, buildAnnouncementMd, parseFrontMatter } from '../../../../lib/github.ts';
+import { getFile, putFile, buildAnnouncementMd, parseFrontMatter, isGHError } from '../../../../lib/github.ts';
 
 export const prerender = false;
 
@@ -13,10 +13,11 @@ let error = '';
 let sha = '';
 
 // Fetch current file from GitHub
-const file = await getFile(filePath, token);
-if (!file) {
+const rawFile = await getFile(filePath, token);
+if (!rawFile || isGHError(rawFile)) {
   return Astro.redirect('/admin/announcements');
 }
+const file = rawFile;
 sha = file.sha;
 
 const { fm, body: existingBody } = parseFrontMatter(file.content);

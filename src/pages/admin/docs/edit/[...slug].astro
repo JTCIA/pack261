@@ -1,6 +1,6 @@
 ---
 import AdminLayout from '../../../../layouts/AdminLayout.astro';
-import { getFile, putFile, buildDocMd, parseFrontMatter } from '../../../../lib/github.ts';
+import { getFile, putFile, buildDocMd, parseFrontMatter, isGHError } from '../../../../lib/github.ts';
 
 export const prerender = false;
 
@@ -13,10 +13,11 @@ const filePath = `src/content/docs/${slug}/index.md`;
 let error = '';
 let sha = '';
 
-const file = await getFile(filePath, token);
-if (!file) {
+const rawFile = await getFile(filePath, token);
+if (!rawFile || isGHError(rawFile)) {
   return Astro.redirect('/admin/docs');
 }
+const file = rawFile;
 sha = file.sha;
 
 const { fm, body: existingBody } = parseFrontMatter(file.content);

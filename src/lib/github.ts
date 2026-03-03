@@ -39,11 +39,44 @@ export interface GHFile {
   content: string;
 }
 
-export async function getFile(path: string, token?: string): Promise<GHFile | null> {
-  const res = await ghFetch(path, token);
-  if (!res.ok) return null;
+export interface GHError {
+  status: number;
+  message: string;
+}
+
+/** Returns the file, or a GHError describing why it failed, or null on network error. */
+export async function getFile(path: string, token?: string): Promise<GHFile | GHError | null> {
+  let res: Response;
+  try {
+    res = await ghFetch(path, token);
+  } catch {
+    return null;
+  }
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({})) as { message?: string };
+    return { status: res.status, message: body.message ?? `HTTP ${res.status}` };
+  }
   const data = (await res.json()) as { sha: string; content: string };
   return { sha: data.sha, content: fromBase64(data.content) };
+}
+
+export function isGHError(v: unknown): v is GHError {
+  return v !== null && typeof v === 'object' && 'status' in (v as object);
+}
+
+/**
+ * Returns a human-readable explanation of why a GitHub API call failed.
+ * Pass the token so we can tell the user when it's simply missing.
+ */
+export function ghErrorMessage(err: GHError | null, token: string | undefined): string {
+  if (!token) {
+    return 'GITHUB_TOKEN is not set. In your Cloudflare Pages project go to Settings → Environment variables and add GITHUB_TOKEN for the Production environment, then redeploy.';
+  }
+  if (!err) return 'Network error connecting to GitHub.';
+  if (err.status === 401) return `GitHub auth failed (HTTP 401) — the token is invalid or expired. Regenerate it and update the Cloudflare Pages environment variable.`;
+  if (err.status === 403) return `GitHub access denied (HTTP 403) — make sure GITHUB_TOKEN has "repo" scope (or "contents: read & write" for a fine-grained token).`;
+  if (err.status === 404) return `Not found in the GitHub repo (HTTP 404) — check that the file exists on the default branch of ${OWNER}/${REPO}.`;
+  return `GitHub API error: ${err.message} (HTTP ${err.status})`;
 }
 
 /** Create or update a file. Pass sha to update an existing file. */
@@ -160,14 +193,14 @@ export interface CalendarEvent {
 
 const CALENDAR_PATH = 'src/data/calendar.json';
 
-export async function getCalendar(token?: string): Promise<{ events: CalendarEvent[]; sha: string } | null> {
+export async function getCalendar(token?: string): Promise<{ events: CalendarEvent[]; sha: string } | GHError | null> {
   const file = await getFile(CALENDAR_PATH, token);
-  if (!file) return null;
+  if (!file || isGHError(file)) return file;
   try {
     const events = JSON.parse(file.content) as CalendarEvent[];
     return { events, sha: file.sha };
   } catch {
-    return null;
+    return { status: 0, message: 'calendar.json contains invalid JSON' };
   }
 }
 
