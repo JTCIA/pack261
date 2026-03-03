@@ -1,0 +1,57 @@
+backend:
+  name: github
+  repo: JTCIA/pack261
+  branch: main
+  base_url: https://scoutpack261.com
+  auth_endpoint: api/auth
+
+media_folder: public/uploads
+public_folder: /uploads
+
+collections:
+  - name: announcements
+    label: Announcements
+    folder: src/content/announcements
+    create: true
+    extension: md
+    format: frontmatter
+    slug: "{{slug}}"
+    fields:
+      - { label: Title, name: title, widget: string }
+      - { label: Date, name: date, widget: datetime, date_format: "YYYY-MM-DD", time_format: false }
+      - label: Category
+        name: category
+        widget: select
+        options:
+          - { label: News, value: news }
+          - { label: Event, value: event }
+          - { label: Fundraiser, value: fundraiser }
+          - { label: Achievement, value: achievement }
+          - { label: Reminder, value: reminder }
+      - { label: Pin to top, name: pinned, widget: boolean, default: false }
+      - { label: Summary, name: summary, widget: string, hint: "Short one-line summary shown in the announcement list" }
+      - { label: Author, name: author, widget: string, default: "Pack 261 Leadership" }
+      - { label: Body, name: body, widget: markdown }
+
+  - name: docs
+    label: Documentation
+    folder: src/content/docs
+    create: true
+    extension: md
+    format: frontmatter
+    nested:
+      depth: 2
+    fields:
+      - { label: Title, name: title, widget: string }
+      - { label: Description, name: description, widget: string, required: false }
+      - label: Section
+        name: section
+        widget: select
+        options:
+          - { label: Getting Started, value: getting-started }
+          - { label: Den Leader Guide, value: den-leader-guide }
+          - { label: Annual Program Plan, value: annual-program-plan }
+          - { label: Pack Policies, value: pack-policies }
+      - { label: Order, name: order, widget: number, default: 99 }
+      - { label: Last Updated, name: lastUpdated, widget: datetime, date_format: "YYYY-MM-DD", time_format: false, required: false }
+      - { label: Body, name: body, widget: markdown }
