@@ -74,7 +74,8 @@ export function ghErrorMessage(err: GHError | null, token: string | undefined): 
   }
   if (!err) return 'Network error connecting to GitHub.';
   if (err.status === 401) return `GitHub auth failed (HTTP 401) — the token is invalid or expired. Regenerate it and update the Cloudflare Pages environment variable.`;
-  if (err.status === 403) return `GitHub access denied (HTTP 403) — make sure GITHUB_TOKEN has "repo" scope (or "contents: read & write" for a fine-grained token).`;
+  if (err.status === 403) return `GitHub access denied (HTTP 403) — make sure GITHUB_TOKEN has "repo" scope (or "contents: read & write" for a fine-grained token). GitHub says: "${err.message}"`;
+
   if (err.status === 404) return `Not found in the GitHub repo (HTTP 404) — check that the file exists on the default branch of ${OWNER}/${REPO}.`;
   return `GitHub API error: ${err.message} (HTTP ${err.status})`;
 }
