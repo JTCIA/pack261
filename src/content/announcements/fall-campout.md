@@ -1,20 +1,18 @@
 ---
-title: "Fall Campout — Registration Open!"
+title: "Spring Camping Trip"
 date: 2025-09-15
 category: event
-pinned: true
-summary: "Our annual fall campout is scheduled for October 10-12 at Eagle Creek Campground. Register by September 30th!"
+pinned: false
+summary: "Our annual spring campout is scheduled for March 27th - 29th at Avondale Scout Reservation!"
 author: "Pack Committee"
 ---
 
-It's time to head outdoors! Pack 261's annual Fall Campout is right around the corner. Join us for a weekend of camping, hiking, and earning adventure loops.
+It's time to head outdoors! Pack 261's annual Spring Campout is right around the corner. Join us for a weekend of camping, hiking, and earning adventure loops.
 
 ## Details
 
-- **Dates:** October 10–12, 2025
-- **Location:** Eagle Creek Campground, Site B
-- **Cost:** $15 per scout, $10 per additional family member
-- **Registration Deadline:** September 30, 2025
+- **Dates:** March 27-29, 2026
+- **Location:** Avondale Scout Reservation, Camp McGee Site
 
 ## What to Bring
 
@@ -26,12 +24,5 @@ It's time to head outdoors! Pack 261's annual Fall Campout is right around the c
 - Flashlight/headlamp
 - Insect repellent
 
-## Activities Planned
 
-- Saturday morning hike on the Lakeside Trail
-- Fire building demonstration
-- Archery (Arrow of Light dens)
-- Cooking badge requirements
-- Saturday night campfire with skits and s'mores
-
-**Questions?** Reach out to our Outdoor Activities Coordinator at outdoors@pack261.com
+**Questions?** Reach out to our Outdoor Activities Coordinator at BSASELAPack261@gmail.com
