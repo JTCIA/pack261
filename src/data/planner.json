@@ -9,5 +9,16 @@
     "due": "2026-03-27",
     "col": "in-progress",
     "createdAt": 1772556495638
+  },
+  {
+    "id": "mmcv21dp3kcdoi9eqgs",
+    "title": "Email for cake contest",
+    "desc": "get details from Chris on what rules are for cake contest",
+    "category": "admin",
+    "priority": "high",
+    "assignee": "JT",
+    "due": "2026-03-06",
+    "col": "backlog",
+    "createdAt": 1772678578813
   }
 ]
