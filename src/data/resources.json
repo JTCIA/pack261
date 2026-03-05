@@ -142,5 +142,13 @@
     "desc": "Council Website",
     "section": "BSA Official Resources",
     "icon": "tent"
+  },
+  {
+    "id": "mmcs3rmgou7wwzq0jfa",
+    "title": "SELA Council Calendar",
+    "url": "https://bsa-selacouncil.doubleknot.com/app/calendar/month?orgkey=389",
+    "desc": "Council Calendar of events",
+    "section": "BSA Official Resources",
+    "icon": "check"
   }
 ]
