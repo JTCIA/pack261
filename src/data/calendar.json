@@ -51,5 +51,14 @@
     "type": "camping",
     "description": "",
     "den": ""
+  },
+  {
+    "id": "mmdkqdhyc6k",
+    "date": "2026-04-05",
+    "title": "Scout Mass",
+    "location": "St. Ann Church",
+    "type": "event",
+    "description": "9:30 Mass",
+    "den": ""
   }
 ]
