@@ -70,5 +70,14 @@
     "type": "meeting",
     "description": "",
     "den": ""
+  },
+  {
+    "id": "mmdks12x29c",
+    "date": "2026-05-03",
+    "title": "Scout Mass",
+    "location": "St. Ann Church",
+    "type": "event",
+    "description": "9:30 Mass",
+    "den": ""
   }
 ]
