@@ -88,5 +88,14 @@
     "type": "meeting",
     "description": "",
     "den": ""
+  },
+  {
+    "id": "mmdktivzdgb",
+    "date": "2026-04-21",
+    "title": "Lion's Den Meeting",
+    "location": "St. Raymond Room",
+    "type": "meeting",
+    "description": "",
+    "den": "lion"
   }
 ]
