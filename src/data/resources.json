@@ -33,10 +33,10 @@
   },
   {
     "id": "res5",
-    "section": "Tools & Applications",
-    "title": "Scoutbook",
-    "url": "https://scoutbook.scouting.org/",
+    "title": "Scoutbook+",
+    "url": "https://advancements.scouting.org/",
     "desc": "Track scout advancement, log activities, and communicate with families",
+    "section": "Tools & Applications",
     "icon": "check"
   },
   {
