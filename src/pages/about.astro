@@ -30,7 +30,7 @@ import Layout from '../layouts/Layout.astro';
           Our pack is part of the Boy Scouts of America's Southeast Louisiana Council, Pelican District.
         </p>
         <p class="text-gray-600 leading-relaxed">
-          We've been proudly serving our community since [year], and are always excited to welcome new scouts and families.
+          We've been proudly serving our community, and are always excited to welcome new scouts and families.
         </p>
       </div>
       <div>
@@ -38,12 +38,12 @@ import Layout from '../layouts/Layout.astro';
         <ul class="space-y-3">
           {[
             'Monthly pack meetings with activities and advancement ceremonies',
-            'Weekly den meetings focused on rank-specific adventures',
+            'Monthly den meetings focused on rank-specific adventures',
             'Camping trips and outdoor adventures throughout the year',
             'Community service projects and service learning',
             'The Pinewood Derby — our most exciting annual tradition',
             'Blue & Gold Banquet celebrating the founding of Scouting',
-            'Day camp and resident camp in the summer',
+            'Summer scouting activities',
           ].map((item) => (
             <li class="flex items-start gap-2 text-gray-600 text-sm">
               <svg class="w-5 h-5 text-scout-gold mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
@@ -81,12 +81,11 @@ import Layout from '../layouts/Layout.astro';
       <h2 class="text-2xl font-bold text-scout-blue mb-6">Pack Leadership</h2>
       <div class="grid sm:grid-cols-2 md:grid-cols-3 gap-4">
         {[
-          { role: 'Cubmaster', name: '[Name]', description: 'Overall program leadership' },
-          { role: 'Pack Committee Chair', name: '[Name]', description: 'Pack administration and governance' },
-          { role: 'Treasurer', name: '[Name]', description: 'Financial management' },
-          { role: 'Advancement Chair', name: '[Name]', description: 'Awards and rank tracking' },
-          { role: 'Membership Chair', name: '[Name]', description: 'Recruitment and registration' },
-          { role: 'Outdoor Activities Chair', name: '[Name]', description: 'Camping and outdoor events' },
+          { role: 'Cubmaster', name: 'Luca Pezzo', description: 'Overall program leadership' },
+          { role: 'Pack Committee Chair', name: 'Chris Kern', description: 'Pack administration and governance' },
+          { role: 'Treasurer and Membership Chair', name: 'Chris Capretto', description: 'Financial management / Recruitment and registration' },
+          { role: 'Secretary', name: 'JT Erwin', description: 'Communications and Website' },
+          { role: 'Advancement Chair', name: 'Bourne Zerby', description: 'Awards and rank tracking' },
         ].map(({ role, name, description }) => (
           <div class="bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
             <div class="w-10 h-10 bg-scout-blue-pale rounded-full flex items-center justify-center mb-3">
