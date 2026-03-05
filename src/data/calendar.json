@@ -61,5 +61,14 @@
     "type": "event",
     "description": "9:30 Mass",
     "den": ""
+  },
+  {
+    "id": "mmdkr7rmezp",
+    "date": "2026-04-15",
+    "title": "Pack Meeting",
+    "location": "School Cafeteria",
+    "type": "meeting",
+    "description": "",
+    "den": ""
   }
 ]
