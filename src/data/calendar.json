@@ -15,5 +15,14 @@
     "type": "event",
     "description": "Rescheduled cub scout parade",
     "den": ""
+  },
+  {
+    "id": "mmdknfm49ir",
+    "date": "2026-03-18",
+    "title": "Pack Meeting",
+    "location": "School Cafeteria",
+    "type": "meeting",
+    "description": "March pack meeting ** Cake Decorating Contest & Auction **",
+    "den": ""
   }
 ]
