@@ -10,6 +10,16 @@ const token = Astro.locals.runtime.env.GITHUB_TOKEN;
 let error = '';
 const today = new Date().toISOString().split('T')[0];
 
+const denOptions: { value: string; label: string }[] = [
+  { value: '',        label: 'All Dens (Pack-wide)' },
+  { value: 'lion',    label: 'Lion' },
+  { value: 'tiger',   label: 'Tiger' },
+  { value: 'wolf',    label: 'Wolf' },
+  { value: 'bear',    label: 'Bear' },
+  { value: 'webelos', label: 'Webelos' },
+  { value: 'aol',     label: 'Arrow of Light (AoL)' },
+];
+
 if (Astro.request.method === 'POST') {
   const form = await Astro.request.formData();
   const date        = (form.get('date')        as string ?? today).trim();
@@ -17,6 +27,7 @@ if (Astro.request.method === 'POST') {
   const location    = (form.get('location')    as string ?? '').trim();
   const type        = (form.get('type')        as string ?? 'event') as CalendarEvent['type'];
   const description = (form.get('description') as string ?? '').trim();
+  const den         = (form.get('den')         as string ?? '').trim();
 
   if (!date || !title) {
     error = 'Date and title are required.';
@@ -25,16 +36,8 @@ if (Astro.request.method === 'POST') {
     if (!raw || isGHError(raw)) {
       error = ghErrorMessage(isGHError(raw) ? raw : null, token);
     } else {
-      const newEvent: CalendarEvent = {
-        id: calendarEventId(),
-        date,
-        title,
-        location,
-        type,
-        description,
-      };
-      const cal = raw;
-      const result = await putCalendar([...cal.events, newEvent], cal.sha, `Add calendar event: ${title}`, token);
+      const newEvent: CalendarEvent = { id: calendarEventId(), date, title, location, type, description, den };
+      const result = await putCalendar([...raw.events, newEvent], raw.sha, `Add calendar event: ${title}`, token);
       if (result.ok) {
         return Astro.redirect('/admin/calendar?saved=created');
       }
@@ -81,6 +84,16 @@ if (Astro.request.method === 'POST') {
           <option value="event">Event</option>
           <option value="deadline">Deadline</option>
           <option value="special">Special</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Den</label>
+        <select name="den"
+          class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-scout-blue">
+          {denOptions.map(({ value, label }) => (
+            <option value={value}>{label}</option>
+          ))}
         </select>
       </div>
 

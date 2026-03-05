@@ -198,6 +198,7 @@ export interface CalendarEvent {
   location: string;
   type: 'meeting' | 'camping' | 'deadline' | 'event' | 'special';
   description: string;
+  den?: string;       // 'lion'|'tiger'|'wolf'|'bear'|'webelos'|'aol' — omit/'' = pack-wide
 }
 
 const CALENDAR_PATH = 'src/data/calendar.json';
