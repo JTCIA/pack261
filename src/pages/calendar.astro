@@ -3,42 +3,12 @@ import Layout from '../layouts/Layout.astro';
 import rawEvents from '../data/calendar.json';
 
 type CalendarEvent = {
-  id: string;
-  date: string;
-  title: string;
-  location: string;
-  type: string;
-  description: string;
+  id: string; date: string; title: string;
+  location: string; type: string; description: string; den?: string;
 };
 
 const events = (rawEvents as CalendarEvent[]).sort((a, b) => a.date.localeCompare(b.date));
-
-const typeStyles: Record<string, { dot: string; badge: string }> = {
-  meeting: { dot: 'bg-scout-blue', badge: 'bg-blue-100 text-blue-800' },
-  camping: { dot: 'bg-green-500', badge: 'bg-green-100 text-green-800' },
-  deadline: { dot: 'bg-red-500', badge: 'bg-red-100 text-red-800' },
-  event: { dot: 'bg-scout-gold', badge: 'bg-yellow-100 text-yellow-800' },
-  special: { dot: 'bg-purple-500', badge: 'bg-purple-100 text-purple-800' },
-};
-
-function formatDate(dateStr: string) {
-  const d = new Date(dateStr + 'T12:00:00');
-  return {
-    month: d.toLocaleDateString('en-US', { month: 'short' }),
-    day: d.getDate(),
-    weekday: d.toLocaleDateString('en-US', { weekday: 'long' }),
-    full: d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
-  };
-}
-
-// Group by month
-const grouped = events.reduce((acc, event) => {
-  const d = new Date(event.date + 'T12:00:00');
-  const key = d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-  if (!acc[key]) acc[key] = [];
-  acc[key].push(event);
-  return acc;
-}, {} as Record<string, CalendarEvent[]>);
+const eventsJson = JSON.stringify(events);
 ---
 
 <Layout title="Calendar" description="Upcoming events and meetings for Cub Scout Pack 261">
@@ -48,15 +18,36 @@ const grouped = events.reduce((acc, event) => {
     <p class="text-blue-200">Upcoming events, meetings, and important dates</p>
   </div>
 
-  <!-- Legend -->
-  <div class="bg-white border-b border-gray-200">
-    <div class="max-w-4xl mx-auto px-4 py-3 flex flex-wrap gap-4 text-sm">
-      {Object.entries(typeStyles).map(([type, styles]) => (
-        <div class="flex items-center gap-1.5">
-          <div class={`w-2.5 h-2.5 rounded-full ${styles.dot}`}></div>
-          <span class="text-gray-600 capitalize">{type}</span>
-        </div>
-      ))}
+  <!-- Controls bar -->
+  <div class="bg-white border-b border-gray-200 sticky top-0 z-10">
+    <div class="max-w-4xl mx-auto px-4 py-3 flex flex-col sm:flex-row sm:items-center gap-3">
+
+      <!-- Den filter pills -->
+      <div class="flex gap-1.5 flex-wrap flex-1" id="den-filters">
+        <button data-den="all"     class="den-pill px-3 py-1 rounded-full text-xs font-semibold border transition-colors bg-scout-blue text-white border-scout-blue">All Events</button>
+        <button data-den="lion"    class="den-pill px-3 py-1 rounded-full text-xs font-semibold border transition-colors bg-white text-gray-600 border-gray-200 hover:border-yellow-400">Lion</button>
+        <button data-den="tiger"   class="den-pill px-3 py-1 rounded-full text-xs font-semibold border transition-colors bg-white text-gray-600 border-gray-200 hover:border-orange-400">Tiger</button>
+        <button data-den="wolf"    class="den-pill px-3 py-1 rounded-full text-xs font-semibold border transition-colors bg-white text-gray-600 border-gray-200 hover:border-red-400">Wolf</button>
+        <button data-den="bear"    class="den-pill px-3 py-1 rounded-full text-xs font-semibold border transition-colors bg-white text-gray-600 border-gray-200 hover:border-amber-600">Bear</button>
+        <button data-den="webelos" class="den-pill px-3 py-1 rounded-full text-xs font-semibold border transition-colors bg-white text-gray-600 border-gray-200 hover:border-blue-500">Webelos</button>
+        <button data-den="aol"     class="den-pill px-3 py-1 rounded-full text-xs font-semibold border transition-colors bg-white text-gray-600 border-gray-200 hover:border-indigo-500">Arrow of Light</button>
+      </div>
+
+      <!-- View toggle -->
+      <div class="flex items-center gap-1 bg-gray-100 rounded-lg p-1 self-start sm:self-auto flex-shrink-0">
+        <button id="btn-list" class="view-btn flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-colors bg-white text-scout-blue shadow-sm">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/>
+          </svg>
+          List
+        </button>
+        <button id="btn-month" class="view-btn flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-colors text-gray-500 hover:text-gray-700">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+          </svg>
+          Month
+        </button>
+      </div>
     </div>
   </div>
 
@@ -72,64 +63,290 @@ const grouped = events.reduce((acc, event) => {
       </div>
     </div>
 
-    <!-- Events by month -->
-    {Object.entries(grouped).map(([month, monthEvents]) => (
+    <!-- LIST VIEW -->
+    <div id="list-view"></div>
+
+    <!-- MONTH VIEW -->
+    <div id="month-view" class="hidden">
+      <div class="flex items-center justify-between mb-5">
+        <button id="prev-month"
+          class="p-2 rounded-lg border border-gray-200 text-gray-500 hover:text-scout-blue hover:border-scout-blue transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+          </svg>
+        </button>
+        <h2 id="month-label" class="text-lg font-bold text-scout-blue"></h2>
+        <button id="next-month"
+          class="p-2 rounded-lg border border-gray-200 text-gray-500 hover:text-scout-blue hover:border-scout-blue transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+          </svg>
+        </button>
+      </div>
+      <!-- Day-of-week headers -->
+      <div class="grid grid-cols-7 mb-1">
+        {['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d => (
+          <div class="text-center text-xs font-semibold text-gray-400 pb-2">{d}</div>
+        ))}
+      </div>
+      <div id="month-grid" class="grid grid-cols-7 gap-px bg-gray-200 rounded-xl overflow-hidden border border-gray-200"></div>
+      <div class="mt-5 flex flex-wrap gap-x-5 gap-y-2">
+        {[
+          ['bg-scout-blue','Meeting'],
+          ['bg-green-500','Camping'],
+          ['bg-red-500','Deadline'],
+          ['bg-scout-gold','Event'],
+          ['bg-purple-500','Special'],
+        ].map(([dot, label]) => (
+          <div class="flex items-center gap-1.5 text-xs text-gray-500">
+            <div class={`w-2 h-2 rounded-full ${dot}`}></div>
+            <span>{label}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Embedded event data (not executable JS — type=application/json) -->
+  <script type="application/json" id="cal-data" set:html={eventsJson}></script>
+
+</Layout>
+
+<script>
+  interface CalEvent {
+    id: string; date: string; title: string;
+    location: string; type: string; description: string; den?: string;
+  }
+
+  const allEvents: CalEvent[] = JSON.parse(
+    document.getElementById('cal-data')!.textContent!
+  );
+
+  let currentView: 'list' | 'month' = 'list';
+  let activeDen = 'all';
+  const today = new Date();
+  let displayMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+
+  const typeStyles: Record<string, { dot: string; badge: string }> = {
+    meeting:  { dot: 'bg-scout-blue', badge: 'bg-blue-100 text-blue-800'    },
+    camping:  { dot: 'bg-green-500',  badge: 'bg-green-100 text-green-800'  },
+    deadline: { dot: 'bg-red-500',    badge: 'bg-red-100 text-red-800'      },
+    event:    { dot: 'bg-scout-gold', badge: 'bg-yellow-100 text-yellow-800' },
+    special:  { dot: 'bg-purple-500', badge: 'bg-purple-100 text-purple-800' },
+  };
+
+  const denBadge: Record<string, string> = {
+    lion:    'bg-yellow-100 text-yellow-800',
+    tiger:   'bg-orange-100 text-orange-800',
+    wolf:    'bg-red-100 text-red-800',
+    bear:    'bg-amber-100 text-amber-800',
+    webelos: 'bg-blue-100 text-blue-800',
+    aol:     'bg-indigo-100 text-indigo-800',
+  };
+
+  const denPillActive: Record<string, string> = {
+    all:     'bg-scout-blue text-white border-scout-blue',
+    lion:    'bg-yellow-400 text-yellow-900 border-yellow-400',
+    tiger:   'bg-orange-400 text-white border-orange-400',
+    wolf:    'bg-red-500 text-white border-red-500',
+    bear:    'bg-amber-700 text-white border-amber-700',
+    webelos: 'bg-blue-500 text-white border-blue-500',
+    aol:     'bg-indigo-600 text-white border-indigo-600',
+  };
+
+  const denLabel: Record<string, string> = {
+    lion: 'Lion', tiger: 'Tiger', wolf: 'Wolf',
+    bear: 'Bear', webelos: 'Webelos', aol: 'Arrow of Light',
+  };
+
+  // When a specific den is chosen, show events for that den + all pack-wide events
+  function getFiltered(): CalEvent[] {
+    if (activeDen === 'all') return allEvents;
+    return allEvents.filter(e => !e.den || e.den === '' || e.den === activeDen);
+  }
+
+  function esc(s: string) {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function isoDay(y: number, m: number, d: number) {
+    return `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+  }
+
+  // ── List view ─────────────────────────────────────────────────────────────────
+  function renderList() {
+    const events = getFiltered();
+    const container = document.getElementById('list-view')!;
+
+    if (events.length === 0) {
+      container.innerHTML = `
+        <div class="text-center py-16 text-gray-400">
+          <svg class="w-12 h-12 mx-auto mb-3 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+          </svg>
+          <p>No events found. Try a different den filter or check back soon!</p>
+        </div>`;
+      return;
+    }
+
+    const grouped: Record<string, CalEvent[]> = {};
+    const order: string[] = [];
+    for (const e of events) {
+      const key = new Date(e.date + 'T12:00:00')
+        .toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+      if (!grouped[key]) { grouped[key] = []; order.push(key); }
+      grouped[key].push(e);
+    }
+
+    container.innerHTML = order.map(month => `
       <div class="mb-8">
         <h2 class="text-lg font-bold text-scout-blue mb-4 flex items-center gap-2">
           <div class="h-px flex-1 bg-blue-200"></div>
-          <span class="px-3">{month}</span>
+          <span class="px-3">${esc(month)}</span>
           <div class="h-px flex-1 bg-blue-200"></div>
         </h2>
-
         <div class="space-y-3">
-          {monthEvents.map((event) => {
-            const fmt = formatDate(event.date);
-            const styles = typeStyles[event.type] ?? typeStyles.event;
-            return (
+          ${grouped[month].map(ev => {
+            const d   = new Date(ev.date + 'T12:00:00');
+            const mon = d.toLocaleDateString('en-US', { month: 'short' });
+            const day = d.getDate();
+            const ts  = typeStyles[ev.type] ?? typeStyles.event;
+            return `
               <div class="flex gap-4 bg-white border border-gray-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow">
-                <!-- Date badge -->
                 <div class="flex-shrink-0 text-center w-12">
-                  <div class="text-xs font-semibold text-gray-400 uppercase">{fmt.month}</div>
-                  <div class="text-2xl font-bold text-scout-blue leading-none">{fmt.day}</div>
+                  <div class="text-xs font-semibold text-gray-400 uppercase">${mon}</div>
+                  <div class="text-2xl font-bold text-scout-blue leading-none">${day}</div>
                 </div>
-
                 <div class="border-l border-gray-200 pl-4 flex-1 min-w-0">
                   <div class="flex items-start justify-between gap-2">
-                    <div>
+                    <div class="flex-1 min-w-0">
                       <div class="flex items-center gap-2 flex-wrap mb-0.5">
-                        <div class={`w-2 h-2 rounded-full flex-shrink-0 ${styles.dot}`}></div>
-                        <h3 class="font-semibold text-gray-900 text-sm">{event.title}</h3>
+                        <div class="w-2 h-2 rounded-full flex-shrink-0 ${ts.dot}"></div>
+                        <h3 class="font-semibold text-gray-900 text-sm">${esc(ev.title)}</h3>
                       </div>
-                      {event.location && (
+                      ${ev.location ? `
                         <p class="text-xs text-gray-400 flex items-center gap-1 mb-1">
-                          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                          </svg>
-                          {event.location}
-                        </p>
-                      )}
-                      <p class="text-xs text-gray-500">{event.description}</p>
+                          <svg class="w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                          </svg>${esc(ev.location)}
+                        </p>` : ''}
+                      ${ev.description ? `<p class="text-xs text-gray-500">${esc(ev.description)}</p>` : ''}
                     </div>
-                    <span class={`text-xs font-medium px-2 py-0.5 rounded-full flex-shrink-0 capitalize ${styles.badge}`}>
-                      {event.type}
-                    </span>
+                    <div class="flex flex-col items-end gap-1 flex-shrink-0">
+                      <span class="text-xs font-medium px-2 py-0.5 rounded-full capitalize ${ts.badge}">${esc(ev.type)}</span>
+                      ${ev.den ? `<span class="text-xs font-medium px-2 py-0.5 rounded-full ${denBadge[ev.den] ?? 'bg-gray-100 text-gray-700'}">${esc(denLabel[ev.den] ?? ev.den)}</span>` : ''}
+                    </div>
                   </div>
                 </div>
-              </div>
-            );
-          })}
+              </div>`;
+          }).join('')}
         </div>
-      </div>
-    ))}
+      </div>`).join('');
+  }
 
-    {events.length === 0 && (
-      <div class="text-center py-16 text-gray-400">
-        <svg class="w-12 h-12 mx-auto mb-3 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-        </svg>
-        <p>No upcoming events. Check back soon!</p>
-      </div>
-    )}
-  </div>
-</Layout>
+  // ── Month grid view ───────────────────────────────────────────────────────────
+  function renderMonth() {
+    const events = getFiltered();
+    const year  = displayMonth.getFullYear();
+    const month = displayMonth.getMonth();
+
+    document.getElementById('month-label')!.textContent =
+      displayMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+
+    const firstDow  = new Date(year, month, 1).getDay();
+    const daysInMo  = new Date(year, month + 1, 0).getDate();
+    const todayStr  = isoDay(today.getFullYear(), today.getMonth(), today.getDate());
+
+    const byDay: Record<string, CalEvent[]> = {};
+    for (const e of events) {
+      if (!byDay[e.date]) byDay[e.date] = [];
+      byDay[e.date].push(e);
+    }
+
+    const totalCells = Math.ceil((firstDow + daysInMo) / 7) * 7;
+    let cells = '';
+
+    for (let i = 0; i < totalCells; i++) {
+      const dayNum = i - firstDow + 1;
+      if (dayNum < 1 || dayNum > daysInMo) {
+        cells += `<div class="bg-gray-50 min-h-[80px] p-1"></div>`;
+        continue;
+      }
+      const ds = isoDay(year, month, dayNum);
+      const isToday = ds === todayStr;
+      const dayEvents = byDay[ds] ?? [];
+      const shown   = dayEvents.slice(0, 3);
+      const overflow = dayEvents.length - 3;
+
+      cells += `
+        <div class="bg-white min-h-[80px] p-1.5 ${isToday ? 'ring-2 ring-inset ring-scout-blue' : ''}">
+          <div class="text-xs font-semibold mb-1 w-5 h-5 flex items-center justify-center rounded-full
+            ${isToday ? 'bg-scout-blue text-white' : 'text-gray-400'}">${dayNum}</div>
+          ${shown.map(ev => {
+            const ts = typeStyles[ev.type] ?? typeStyles.event;
+            return `<div class="text-xs rounded px-1 py-0.5 mb-0.5 truncate ${ts.badge}"
+              title="${esc(ev.title)}">${esc(ev.title)}</div>`;
+          }).join('')}
+          ${overflow > 0 ? `<div class="text-xs text-gray-400 px-1 leading-tight">+${overflow} more</div>` : ''}
+        </div>`;
+    }
+
+    document.getElementById('month-grid')!.innerHTML = cells;
+  }
+
+  // ── Render dispatcher ─────────────────────────────────────────────────────────
+  function render() {
+    currentView === 'list' ? renderList() : renderMonth();
+  }
+
+  // ── Den filter pills ──────────────────────────────────────────────────────────
+  document.querySelectorAll<HTMLButtonElement>('.den-pill').forEach(btn => {
+    btn.addEventListener('click', () => {
+      activeDen = btn.dataset.den ?? 'all';
+      document.querySelectorAll<HTMLButtonElement>('.den-pill').forEach(b => {
+        const den = b.dataset.den ?? 'all';
+        const active = den === activeDen;
+        b.className = `den-pill px-3 py-1 rounded-full text-xs font-semibold border transition-colors ${
+          active
+            ? (denPillActive[den] ?? denPillActive.all)
+            : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'
+        }`;
+      });
+      render();
+    });
+  });
+
+  // ── View toggle ───────────────────────────────────────────────────────────────
+  const activeBtn   = 'view-btn flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-colors bg-white text-scout-blue shadow-sm';
+  const inactiveBtn = 'view-btn flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-colors text-gray-500 hover:text-gray-700';
+
+  function setView(v: 'list' | 'month') {
+    currentView = v;
+    document.getElementById('list-view')!.classList.toggle('hidden', v !== 'list');
+    document.getElementById('month-view')!.classList.toggle('hidden', v !== 'month');
+    document.getElementById('btn-list')!.className  = v === 'list'  ? activeBtn : inactiveBtn;
+    document.getElementById('btn-month')!.className = v === 'month' ? activeBtn : inactiveBtn;
+    render();
+  }
+
+  document.getElementById('btn-list')!.addEventListener('click',  () => setView('list'));
+  document.getElementById('btn-month')!.addEventListener('click', () => setView('month'));
+
+  // ── Month navigation ──────────────────────────────────────────────────────────
+  document.getElementById('prev-month')!.addEventListener('click', () => {
+    displayMonth = new Date(displayMonth.getFullYear(), displayMonth.getMonth() - 1, 1);
+    renderMonth();
+  });
+  document.getElementById('next-month')!.addEventListener('click', () => {
+    displayMonth = new Date(displayMonth.getFullYear(), displayMonth.getMonth() + 1, 1);
+    renderMonth();
+  });
+
+  // ── Init ──────────────────────────────────────────────────────────────────────
+  render();
+</script>

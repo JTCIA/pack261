@@ -49,6 +49,20 @@ const typeColors: Record<string, string> = {
   special: 'bg-purple-100 text-purple-800',
 };
 
+const denColors: Record<string, string> = {
+  lion:    'bg-yellow-100 text-yellow-800',
+  tiger:   'bg-orange-100 text-orange-800',
+  wolf:    'bg-red-100 text-red-800',
+  bear:    'bg-amber-100 text-amber-800',
+  webelos: 'bg-blue-100 text-blue-800',
+  aol:     'bg-indigo-100 text-indigo-800',
+};
+
+const denLabels: Record<string, string> = {
+  lion: 'Lion', tiger: 'Tiger', wolf: 'Wolf',
+  bear: 'Bear', webelos: 'Webelos', aol: 'AoL',
+};
+
 function formatDate(dateStr: string) {
   return new Date(dateStr + 'T12:00:00').toLocaleDateString('en-US', {
     month: 'short', day: 'numeric', year: 'numeric',
@@ -140,6 +154,11 @@ const grouped = events.reduce((acc, event) => {
                   <span class={`text-xs px-2 py-0.5 rounded-full capitalize font-medium ${typeColors[event.type] ?? typeColors.event}`}>
                     {event.type}
                   </span>
+                  {event.den && (
+                    <span class={`text-xs px-2 py-0.5 rounded-full font-medium ${denColors[event.den] ?? 'bg-gray-100 text-gray-700'}`}>
+                      {denLabels[event.den] ?? event.den}
+                    </span>
+                  )}
                 </div>
                 {event.location && (
                   <p class="text-xs text-gray-400 mt-0.5">{event.location}</p>
