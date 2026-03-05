@@ -20,5 +20,16 @@
     "due": "2026-03-06",
     "col": "done",
     "createdAt": 1772678578813
+  },
+  {
+    "id": "mmdqgxbuqtpenbrao8t",
+    "title": "Book Campsite",
+    "desc": "",
+    "category": "camping",
+    "priority": "high",
+    "assignee": "Chris Kern",
+    "due": "2026-03-05",
+    "col": "done",
+    "createdAt": 1772731341498
   }
 ]
