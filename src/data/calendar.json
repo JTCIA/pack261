@@ -115,5 +115,14 @@
     "type": "meeting",
     "description": "7PM",
     "den": "wolf"
+  },
+  {
+    "id": "mme5tckdg2e",
+    "date": "2026-04-09",
+    "title": "April Wolf Den Meeting",
+    "location": "St. Ann School Parish Ministry Building",
+    "type": "meeting",
+    "description": "7PM",
+    "den": "wolf"
   }
 ]
