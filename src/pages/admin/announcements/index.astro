@@ -121,6 +121,16 @@ export const prerender = false;
             </div>
           </div>
           <div class="flex items-center gap-2 flex-shrink-0">
+            <button
+              class="copy-groupme-btn relative text-xs px-3 py-1.5 border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50 hover:border-gray-300 transition-colors"
+              data-title={post.data.title}
+              data-summary={post.data.summary}
+              data-slug={post.slug}
+              title="Copy for GroupMe"
+            >
+              <span class="btn-label">Copy</span>
+              <span class="btn-copied hidden absolute inset-0 flex items-center justify-center rounded-lg bg-green-50 border border-green-200 text-green-700">✓ Copied</span>
+            </button>
             <a
               href={`/admin/announcements/edit/${post.slug}`}
               class="text-xs px-3 py-1.5 border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50 hover:border-gray-300 transition-colors"
@@ -140,5 +150,40 @@ export const prerender = false;
       ))}
     </div>
   )}
+
+<script>
+  document.querySelectorAll<HTMLButtonElement>('.copy-groupme-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const title   = btn.dataset.title ?? '';
+      const summary = btn.dataset.summary ?? '';
+      const slug    = btn.dataset.slug ?? '';
+      const url     = `${location.origin}/announcements#${slug}`;
+      const text    = `${title}\n${summary}\n\n${url}`;
+
+      try {
+        await navigator.clipboard.writeText(text);
+      } catch {
+        // Fallback for older browsers
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+      }
+
+      const label  = btn.querySelector('.btn-label')!;
+      const copied = btn.querySelector('.btn-copied')!;
+      label.classList.add('invisible');
+      copied.classList.remove('hidden');
+      setTimeout(() => {
+        label.classList.remove('invisible');
+        copied.classList.add('hidden');
+      }, 2000);
+    });
+  });
+</script>
 
 </AdminLayout>
