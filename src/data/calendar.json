@@ -106,5 +106,14 @@
     "type": "meeting",
     "description": "",
     "den": "lion"
+  },
+  {
+    "id": "mme5ps7uk4h",
+    "date": "2026-03-12",
+    "title": "March Wolf Den Meeting",
+    "location": "St. Ann School Parish Ministry Building",
+    "type": "meeting",
+    "description": "7PM",
+    "den": "wolf"
   }
 ]
