@@ -10,7 +10,7 @@ lastUpdated: 2026-03-04
 
 - [ ] do we have an email address?  Needed for contact us form to work.
 - [ ] what pack documents do we have and can/should include in the documents section?
-- [ ] list of council contacts and roles
+- [x] list of council contacts and roles
 - [ ] update external resource links - most currently broken or simply point to my.scouting
-- [ ] Update announcements
-- [ ] Update calendar
+- [x] Update announcements
+- [x] Update calendar
