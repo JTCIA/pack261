@@ -297,6 +297,41 @@ export async function putReminders(
   return putFile(REMINDERS_PATH, content, message, sha, token);
 }
 
+// ── Documents helpers ─────────────────────────────────────────────────────────
+
+export interface Document {
+  id: string;
+  name: string;           // original filename
+  category: string;       // e.g. 'Forms', 'Meeting Notes', 'Training', 'Planning'
+  r2Key: string;          // key inside the R2 bucket
+  size: number;           // bytes
+  contentType: string;
+  uploadedAt: string;     // ISO 8601
+}
+
+const DOCUMENTS_PATH = 'src/data/documents.json';
+
+export async function getDocuments(token?: string): Promise<{ documents: Document[]; sha: string } | GHError | null> {
+  const file = await getFile(DOCUMENTS_PATH, token);
+  if (!file || isGHError(file)) return file;
+  try {
+    const documents = JSON.parse(file.content) as Document[];
+    return { documents, sha: file.sha };
+  } catch {
+    return { status: 0, message: 'documents.json contains invalid JSON' };
+  }
+}
+
+export async function putDocuments(
+  documents: Document[],
+  sha: string,
+  message: string,
+  token?: string,
+): Promise<{ ok: boolean; error?: string }> {
+  const content = JSON.stringify(documents, null, 2) + '\n';
+  return putFile(DOCUMENTS_PATH, content, message, sha, token);
+}
+
 // ── Resources helpers ─────────────────────────────────────────────────────────
 
 export interface Resource {
