@@ -6,7 +6,6 @@ import { getCollection } from 'astro:content';
 
 const allDocs = await getCollection('docs');
 
-// Group by section
 const sections = allDocs.reduce((acc, doc) => {
   const section = doc.data.section;
   if (!acc[section]) acc[section] = [];
@@ -14,7 +13,6 @@ const sections = allDocs.reduce((acc, doc) => {
   return acc;
 }, {} as Record<string, typeof allDocs>);
 
-// Sort within each section
 for (const section of Object.values(sections)) {
   section.sort((a, b) => a.data.order - b.data.order);
 }
@@ -27,6 +25,7 @@ function formatDate(date?: Date) {
 
 <AdminLayout title="Documentation" activeSection="docs">
 
+  <!-- Flash banner (guides tab) -->
   <div id="flash-banner" class="hidden mb-5 px-4 py-3 bg-green-50 border border-green-200 text-green-800 rounded-lg text-sm font-medium items-center gap-2">
     <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
@@ -34,129 +33,649 @@ function formatDate(date?: Date) {
     <span id="flash-text"></span>
   </div>
 
-  <div class="flex items-center justify-between mb-6">
-    <div>
-      <p class="text-sm text-gray-500 mt-1">Leader guides, policies, and reference documents</p>
+  <!-- Tabs -->
+  <div class="flex items-center gap-1 border-b border-gray-200 mb-6">
+    <button id="tab-guides"
+      class="tab-btn px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors"
+      data-tab="guides">
+      Leader Guides
+    </button>
+    <button id="tab-files"
+      class="tab-btn px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors"
+      data-tab="files">
+      Files
+    </button>
+    <!-- Tab-specific actions pushed to right -->
+    <div class="ml-auto flex items-center gap-3">
+      <span id="file-status" class="text-xs text-gray-400 hidden"></span>
+      <a id="action-new-guide" href="/admin/docs/new"
+        class="flex items-center gap-1.5 text-sm bg-scout-blue text-white px-3 py-1.5 rounded-lg hover:bg-scout-blue-mid transition-colors">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+        </svg>
+        New Guide
+      </a>
+      <button id="action-upload" class="hidden flex items-center gap-1.5 text-sm bg-scout-blue text-white px-3 py-1.5 rounded-lg hover:bg-scout-blue-mid transition-colors">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+        </svg>
+        Upload
+      </button>
     </div>
-    <a href="/admin/docs/new"
-      class="flex items-center gap-1.5 text-sm bg-scout-blue text-white px-3 py-1.5 rounded-lg hover:bg-scout-blue-mid transition-colors">
-      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+  </div>
+
+  <!-- ── Leader Guides pane ──────────────────────────────────────── -->
+  <div id="pane-guides">
+    <div class="relative mb-6">
+      <svg class="absolute left-3 top-2.5 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
       </svg>
-      New Document
-    </a>
-  </div>
+      <input type="search" id="guide-search" placeholder="Search guides…"
+        class="w-full border border-gray-200 rounded-lg pl-9 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-scout-blue bg-white" />
+    </div>
 
-  <!-- Search -->
-  <div class="relative mb-6">
-    <svg class="absolute left-3 top-2.5 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-    </svg>
-    <input
-      type="search"
-      id="doc-search"
-      placeholder="Search documentation..."
-      class="w-full border border-gray-200 rounded-lg pl-9 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-scout-blue bg-white"
-    />
-  </div>
-
-  <!-- Doc sections -->
-  <div id="docs-list" class="space-y-6">
-    {Object.entries(sections).map(([section, docs]) => (
-      <div class="doc-section">
-        <h2 class="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">{section}</h2>
-        <div class="bg-white border border-gray-200 rounded-xl divide-y divide-gray-100 overflow-hidden">
-          {docs.map((doc) => (
-            <div
-              data-title={doc.data.title.toLowerCase()}
-              data-desc={(doc.data.description ?? '').toLowerCase()}
-              class="doc-item flex items-start justify-between px-5 py-4"
-            >
-              <a href={`/admin/docs/${doc.slug}`} class="flex items-start gap-3 flex-1 min-w-0 group hover:text-scout-blue transition-colors">
-                <svg class="w-5 h-5 text-gray-300 group-hover:text-scout-blue mt-0.5 flex-shrink-0 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-                <div class="min-w-0">
-                  <div class="text-sm font-medium text-gray-900 group-hover:text-scout-blue transition-colors">{doc.data.title}</div>
-                  {doc.data.description && (
-                    <div class="text-xs text-gray-500 mt-0.5">{doc.data.description}</div>
-                  )}
-                  {doc.data.lastUpdated && (
-                    <div class="text-xs text-gray-400 mt-0.5">Updated {formatDate(doc.data.lastUpdated)}</div>
-                  )}
+    <div id="guides-list" class="space-y-6">
+      {Object.keys(sections).length === 0 ? (
+        <p class="text-sm text-gray-400">No guides yet. Click "New Guide" to create your first one.</p>
+      ) : (
+        Object.entries(sections).map(([section, docs]) => (
+          <div class="guide-section">
+            <h2 class="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">{section}</h2>
+            <div class="bg-white border border-gray-200 rounded-xl divide-y divide-gray-100 overflow-hidden">
+              {docs.map((doc) => (
+                <div
+                  data-title={doc.data.title.toLowerCase()}
+                  data-desc={(doc.data.description ?? '').toLowerCase()}
+                  class="guide-item flex items-start justify-between px-5 py-4"
+                >
+                  <a href={`/admin/docs/${doc.slug}`} class="flex items-start gap-3 flex-1 min-w-0 group hover:text-scout-blue transition-colors">
+                    <svg class="w-5 h-5 text-gray-300 group-hover:text-scout-blue mt-0.5 flex-shrink-0 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <div class="min-w-0">
+                      <div class="text-sm font-medium text-gray-900 group-hover:text-scout-blue transition-colors">{doc.data.title}</div>
+                      {doc.data.description && (
+                        <div class="text-xs text-gray-500 mt-0.5">{doc.data.description}</div>
+                      )}
+                      {doc.data.lastUpdated && (
+                        <div class="text-xs text-gray-400 mt-0.5">Updated {formatDate(doc.data.lastUpdated)}</div>
+                      )}
+                    </div>
+                  </a>
+                  <a href={`/admin/docs/edit/${doc.slug}`}
+                    class="ml-4 flex-shrink-0 text-xs px-3 py-1.5 border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50 hover:border-gray-300 transition-colors">
+                    Edit
+                  </a>
                 </div>
-              </a>
-              <a
-                href={`/admin/docs/edit/${doc.slug}`}
-                class="ml-4 flex-shrink-0 text-xs px-3 py-1.5 border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50 hover:border-gray-300 transition-colors"
-              >
-                Edit
-              </a>
+              ))}
             </div>
-          ))}
-        </div>
+          </div>
+        ))
+      )}
+    </div>
+
+    <div id="guides-no-results" class="hidden text-center py-12 text-gray-400">
+      <svg class="w-10 h-10 mx-auto mb-3 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+      <p class="text-sm">No guides match your search.</p>
+    </div>
+
+    <div class="mt-8 bg-blue-50 border border-blue-100 rounded-xl p-4">
+      <p class="text-xs text-blue-700 leading-relaxed">
+        <strong>Note:</strong> After creating or editing a guide, the public site rebuilds automatically in about 2 minutes.
+      </p>
+    </div>
+  </div>
+
+  <!-- ── Files pane ─────────────────────────────────────────────── -->
+  <div id="pane-files" class="hidden">
+    <div class="relative mb-6">
+      <svg class="absolute left-3 top-2.5 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+      </svg>
+      <input type="search" id="file-search" placeholder="Search files…"
+        class="w-full border border-gray-200 rounded-lg pl-9 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-scout-blue bg-white" />
+    </div>
+
+    <div id="file-list" class="space-y-8">
+      <p class="text-sm text-gray-400">Loading files…</p>
+    </div>
+
+    <div id="files-no-results" class="hidden text-center py-12 text-gray-400">
+      <svg class="w-10 h-10 mx-auto mb-3 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+      <p class="text-sm">No files match your search.</p>
+    </div>
+  </div>
+
+  <!-- ── Upload modal ───────────────────────────────────────────── -->
+  <div id="upload-modal" class="hidden fixed inset-0 bg-black bg-opacity-40 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-xl w-full max-w-md">
+      <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+        <h3 class="font-semibold text-gray-900">Upload File</h3>
+        <button id="close-upload-modal" class="text-gray-400 hover:text-gray-600">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
       </div>
-    ))}
+      <form id="upload-form" class="p-5 space-y-4">
+        <div id="drop-zone"
+          class="border-2 border-dashed border-gray-200 rounded-lg p-8 text-center cursor-pointer hover:border-scout-blue hover:bg-scout-blue-pale transition-colors">
+          <svg class="w-8 h-8 mx-auto mb-2 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+          </svg>
+          <p class="text-sm text-gray-500">Drop file here or <span class="text-scout-blue font-medium">browse</span></p>
+          <p class="text-xs text-gray-400 mt-1">PDF, Word, Excel, PowerPoint, images, CSV, TXT — max 50 MB</p>
+          <input type="file" id="file-input" class="hidden"
+            accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.jpg,.jpeg,.png,.gif,.webp,.txt,.csv" />
+        </div>
+        <div id="file-preview" class="hidden flex items-center gap-3 bg-gray-50 rounded-lg px-3 py-2">
+          <svg class="w-5 h-5 text-scout-blue flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+          <div class="flex-1 min-w-0">
+            <p id="file-preview-name" class="text-sm font-medium text-gray-900 truncate"></p>
+            <p id="file-preview-size" class="text-xs text-gray-500"></p>
+          </div>
+          <button type="button" id="clear-file" class="text-gray-400 hover:text-gray-600 flex-shrink-0">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Category <span class="text-red-400">*</span></label>
+          <input type="text" id="upload-category" required list="category-options"
+            class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-scout-blue"
+            placeholder="e.g. Forms, Meeting Notes, Training" />
+          <datalist id="category-options">
+            <option value="Forms">
+            <option value="Meeting Notes">
+            <option value="Training">
+            <option value="Planning">
+            <option value="Camping">
+            <option value="Finance">
+          </datalist>
+        </div>
+        <div id="upload-progress-wrap" class="hidden">
+          <div class="flex justify-between text-xs text-gray-500 mb-1">
+            <span>Uploading…</span>
+            <span id="upload-pct">0%</span>
+          </div>
+          <div class="w-full bg-gray-100 rounded-full h-1.5">
+            <div id="upload-bar" class="bg-scout-blue h-1.5 rounded-full transition-all" style="width:0%"></div>
+          </div>
+        </div>
+        <button type="submit" id="upload-submit"
+          class="w-full bg-scout-blue text-white py-2 rounded-lg text-sm font-semibold hover:bg-scout-blue-mid transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+          Upload
+        </button>
+      </form>
+    </div>
   </div>
 
-  <!-- Empty state for search -->
-  <div id="no-results" class="hidden text-center py-12 text-gray-400">
-    <svg class="w-10 h-10 mx-auto mb-3 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-    </svg>
-    <p class="text-sm">No documents match your search.</p>
-  </div>
-
-  <!-- Rebuild note -->
-  <div class="mt-8 bg-blue-50 border border-blue-100 rounded-xl p-4">
-    <p class="text-xs text-blue-700 leading-relaxed">
-      <strong>Note:</strong> After creating or editing a document, the public site rebuilds automatically in about 2 minutes.
-    </p>
+  <!-- ── Edit category modal ────────────────────────────────────── -->
+  <div id="edit-cat-modal" class="hidden fixed inset-0 bg-black bg-opacity-40 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-xl w-full max-w-sm">
+      <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+        <h3 class="font-semibold text-gray-900">Edit Category</h3>
+        <button id="close-edit-cat" class="text-gray-400 hover:text-gray-600">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+      <form id="edit-cat-form" class="p-5 space-y-4">
+        <input type="hidden" id="edit-cat-id" />
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">File</label>
+          <p id="edit-cat-filename" class="text-sm text-gray-500 truncate"></p>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Category <span class="text-red-400">*</span></label>
+          <input type="text" id="edit-cat-value" required list="edit-cat-options"
+            class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-scout-blue"
+            placeholder="Category name" />
+          <datalist id="edit-cat-options"></datalist>
+        </div>
+        <div class="flex gap-2">
+          <button type="submit"
+            class="flex-1 bg-scout-blue text-white py-2 rounded-lg text-sm font-semibold hover:bg-scout-blue-mid transition-colors">
+            Save
+          </button>
+          <button type="button" id="cancel-edit-cat"
+            class="px-4 py-2 rounded-lg text-sm font-medium text-gray-600 border border-gray-200 hover:bg-gray-50 transition-colors">
+            Cancel
+          </button>
+        </div>
+      </form>
+    </div>
   </div>
 
 </AdminLayout>
 
 <script>
-  // Show success flash from redirect query param
+  // ── Types ────────────────────────────────────────────────────────────────
+  interface UploadedFile {
+    id: string;
+    name: string;
+    category: string;
+    r2Key: string;
+    size: number;
+    contentType: string;
+    uploadedAt: string;
+  }
+
+  // ── Tab state ─────────────────────────────────────────────────────────────
+  const TAB_GUIDES = 'guides';
+  const TAB_FILES  = 'files';
+
+  const tabGuideBtn  = document.getElementById('tab-guides')!;
+  const tabFilesBtn  = document.getElementById('tab-files')!;
+  const paneGuides   = document.getElementById('pane-guides')!;
+  const paneFiles    = document.getElementById('pane-files')!;
+  const actionGuide  = document.getElementById('action-new-guide')!;
+  const actionUpload = document.getElementById('action-upload')!;
+
+  function activateTab(tab: string) {
+    const isFiles = tab === TAB_FILES;
+
+    tabGuideBtn.className = `tab-btn px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors ${
+      !isFiles ? 'border-scout-blue text-scout-blue' : 'border-transparent text-gray-500 hover:text-gray-700'
+    }`;
+    tabFilesBtn.className = `tab-btn px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors ${
+      isFiles ? 'border-scout-blue text-scout-blue' : 'border-transparent text-gray-500 hover:text-gray-700'
+    }`;
+
+    paneGuides.classList.toggle('hidden', isFiles);
+    paneFiles.classList.toggle('hidden', !isFiles);
+    actionGuide.classList.toggle('hidden', isFiles);
+    actionUpload.classList.toggle('hidden', !isFiles);
+
+    location.hash = tab;
+
+    if (isFiles && !filesLoaded) loadFiles();
+  }
+
+  tabGuideBtn.addEventListener('click', () => activateTab(TAB_GUIDES));
+  tabFilesBtn.addEventListener('click', () => activateTab(TAB_FILES));
+
+  // ── Guide search ──────────────────────────────────────────────────────────
+  const guideSearch  = document.getElementById('guide-search') as HTMLInputElement;
+  const guideItems   = document.querySelectorAll<HTMLElement>('.guide-item');
+  const guideSections = document.querySelectorAll<HTMLElement>('.guide-section');
+  const guidesNoResults = document.getElementById('guides-no-results')!;
+
+  guideSearch?.addEventListener('input', () => {
+    const q = guideSearch.value.toLowerCase().trim();
+    let visible = 0;
+    guideItems.forEach(item => {
+      const matches = !q || (item.dataset.title ?? '').includes(q) || (item.dataset.desc ?? '').includes(q);
+      item.style.display = matches ? '' : 'none';
+      if (matches) visible++;
+    });
+    guideSections.forEach(sec => {
+      const v = sec.querySelectorAll('.guide-item:not([style*="none"])');
+      sec.style.display = v.length ? '' : 'none';
+    });
+    guidesNoResults.classList.toggle('hidden', visible > 0 || guideItems.length === 0);
+  });
+
+  // ── Flash banner ──────────────────────────────────────────────────────────
   const params = new URLSearchParams(location.search);
   const saved = params.get('saved');
   if (saved) {
     const banner = document.getElementById('flash-banner');
-    const text = document.getElementById('flash-text');
+    const text   = document.getElementById('flash-text');
     if (banner && text) {
       text.textContent = saved === 'created'
-        ? 'Document created! Site rebuilds in ~2 minutes.'
-        : 'Document updated! Site rebuilds in ~2 minutes.';
+        ? 'Guide created! Site rebuilds in ~2 minutes.'
+        : 'Guide updated! Site rebuilds in ~2 minutes.';
       banner.classList.remove('hidden');
       banner.classList.add('flex');
     }
-    // Clean URL
-    history.replaceState({}, '', location.pathname);
+    history.replaceState({}, '', location.pathname + location.hash);
   }
 
-  const searchInput = document.getElementById('doc-search') as HTMLInputElement;
-  const items = document.querySelectorAll<HTMLAnchorElement>('.doc-item');
-  const sections = document.querySelectorAll<HTMLDivElement>('.doc-section');
-  const noResults = document.getElementById('no-results');
+  // ── Files state ───────────────────────────────────────────────────────────
+  let files: UploadedFile[] = [];
+  let currentSha = '';
+  let filesLoaded = false;
+  let fileSearchQuery = '';
+  let selectedFile: File | null = null;
 
-  searchInput?.addEventListener('input', () => {
-    const query = searchInput.value.toLowerCase().trim();
-    let visible = 0;
+  const fileStatusEl = document.getElementById('file-status')!;
+  function setStatus(text: string, color: string) {
+    fileStatusEl.textContent = text;
+    fileStatusEl.className = `text-xs ${color}`;
+    fileStatusEl.classList.toggle('hidden', !text);
+  }
 
-    items.forEach(item => {
-      const title = item.dataset.title ?? '';
-      const desc = item.dataset.desc ?? '';
-      const matches = !query || title.includes(query) || desc.includes(query);
-      item.style.display = matches ? '' : 'none';
-      if (matches) visible++;
+  function formatBytes(bytes: number): string {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  }
+
+  function formatDate(iso: string): string {
+    try { return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }); }
+    catch { return iso; }
+  }
+
+  function esc(s: string): string {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function fileIcon(ct: string): string {
+    if (ct === 'application/pdf') return 'M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z';
+    if (ct.startsWith('image/')) return 'M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z';
+    if (ct.includes('spreadsheet') || ct.includes('excel') || ct === 'text/csv') return 'M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z';
+    return 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z';
+  }
+
+  function canPreviewInline(ct: string): boolean {
+    return ct === 'application/pdf' || ct.startsWith('image/') || ct === 'text/plain';
+  }
+
+  // ── Load files ────────────────────────────────────────────────────────────
+  async function loadFiles() {
+    if (filesLoaded) return;
+    setStatus('Loading…', 'text-gray-400');
+    try {
+      const res  = await fetch('/api/documents');
+      const data = await res.json() as { documents: UploadedFile[]; sha: string; error?: string };
+      if (!res.ok) throw new Error(data.error ?? `HTTP ${res.status}`);
+      files = data.documents;
+      currentSha = data.sha;
+      filesLoaded = true;
+      setStatus('', '');
+    } catch (err) {
+      setStatus('Failed to load', 'text-red-500');
+      console.error(err);
+    }
+    renderFiles();
+  }
+
+  // ── Render files ──────────────────────────────────────────────────────────
+  function renderFiles() {
+    const container = document.getElementById('file-list')!;
+    const noResults = document.getElementById('files-no-results')!;
+    const q = fileSearchQuery.toLowerCase();
+
+    const filtered = files.filter(f =>
+      !q || f.name.toLowerCase().includes(q) || f.category.toLowerCase().includes(q)
+    );
+
+    if (filtered.length === 0 && files.length > 0) {
+      container.innerHTML = '';
+      noResults.classList.remove('hidden');
+      return;
+    }
+    noResults.classList.add('hidden');
+
+    if (files.length === 0) {
+      container.innerHTML = '<p class="text-sm text-gray-400">No files yet. Click "Upload" to add your first file.</p>';
+      return;
+    }
+
+    const catOrder: string[] = [];
+    const grouped: Record<string, UploadedFile[]> = {};
+    for (const f of filtered) {
+      if (!grouped[f.category]) { grouped[f.category] = []; catOrder.push(f.category); }
+      grouped[f.category].push(f);
+    }
+
+    container.innerHTML = catOrder.map(cat => `
+      <div>
+        <h2 class="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">${esc(cat)}</h2>
+        <div class="space-y-2">
+          ${grouped[cat].map(f => `
+            <div class="group flex items-center gap-3 bg-white border border-gray-200 rounded-xl px-4 py-3 hover:border-gray-300 transition-colors">
+              <div class="w-9 h-9 bg-scout-blue-pale rounded-lg flex items-center justify-center flex-shrink-0">
+                <svg class="w-4 h-4 text-scout-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="${fileIcon(f.contentType)}" />
+                </svg>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-medium text-gray-900 truncate">${esc(f.name)}</p>
+                <p class="text-xs text-gray-400">${esc(formatBytes(f.size))} &middot; ${esc(formatDate(f.uploadedAt))}</p>
+              </div>
+              <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                ${canPreviewInline(f.contentType) ? `
+                  <a href="/api/documents/${esc(f.id)}?disposition=inline" target="_blank" rel="noopener"
+                    class="p-1.5 rounded-md text-gray-400 hover:text-scout-blue hover:bg-scout-blue-pale transition-colors" title="Open">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                    </svg>
+                  </a>
+                ` : ''}
+                <a href="/api/documents/${esc(f.id)}" download="${esc(f.name)}"
+                  class="p-1.5 rounded-md text-gray-400 hover:text-scout-blue hover:bg-scout-blue-pale transition-colors" title="Download">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                  </svg>
+                </a>
+                <button data-id="${f.id}" data-name="${esc(f.name)}" data-cat="${esc(f.category)}"
+                  class="edit-cat-btn p-1.5 rounded-md text-gray-400 hover:text-scout-blue hover:bg-scout-blue-pale transition-colors" title="Edit category">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                  </svg>
+                </button>
+                <button data-id="${f.id}" data-name="${esc(f.name)}"
+                  class="delete-file-btn p-1.5 rounded-md text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors" title="Delete">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `).join('');
+
+    container.querySelectorAll<HTMLButtonElement>('.delete-file-btn').forEach(btn => {
+      btn.addEventListener('click', () => deleteFile(btn.dataset.id!, btn.dataset.name!));
+    });
+    container.querySelectorAll<HTMLButtonElement>('.edit-cat-btn').forEach(btn => {
+      btn.addEventListener('click', () => openEditCat(btn.dataset.id!, btn.dataset.name!, btn.dataset.cat!));
     });
 
-    // Hide empty sections
-    sections.forEach(section => {
-      const visibleItems = section.querySelectorAll('.doc-item:not([style*="none"])');
-      section.style.display = visibleItems.length ? '' : 'none';
+    // Update datalist for upload modal and edit modal
+    const categories = [...new Set(files.map(f => f.category))];
+    document.querySelectorAll<HTMLDataListElement>('#category-options, #edit-cat-options').forEach(dl => {
+      dl.innerHTML = categories.map(c => `<option value="${esc(c)}">`).join('');
     });
+  }
 
-    noResults?.classList.toggle('hidden', visible > 0);
+  // ── File search ───────────────────────────────────────────────────────────
+  document.getElementById('file-search')?.addEventListener('input', e => {
+    fileSearchQuery = (e.target as HTMLInputElement).value.trim();
+    renderFiles();
   });
+
+  // ── Delete file ───────────────────────────────────────────────────────────
+  async function deleteFile(id: string, name: string) {
+    if (!confirm(`Delete "${name}"? This cannot be undone.`)) return;
+    setStatus('Deleting…', 'text-gray-400');
+    try {
+      const res  = await fetch('/api/documents', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, sha: currentSha }),
+      });
+      const data = await res.json() as { ok: boolean; sha?: string; error?: string };
+      if (!res.ok) throw new Error(data.error ?? `HTTP ${res.status}`);
+      if (data.sha) currentSha = data.sha;
+      files = files.filter(f => f.id !== id);
+      setStatus('Deleted', 'text-green-600');
+      setTimeout(() => setStatus('', ''), 2000);
+    } catch (err) {
+      setStatus('Delete failed', 'text-red-500');
+      console.error(err);
+    }
+    renderFiles();
+  }
+
+  // ── Edit category ─────────────────────────────────────────────────────────
+  const editCatModal    = document.getElementById('edit-cat-modal')!;
+  const editCatForm     = document.getElementById('edit-cat-form') as HTMLFormElement;
+  const editCatIdInput  = document.getElementById('edit-cat-id') as HTMLInputElement;
+  const editCatFilename = document.getElementById('edit-cat-filename')!;
+  const editCatValue    = document.getElementById('edit-cat-value') as HTMLInputElement;
+
+  function openEditCat(id: string, name: string, category: string) {
+    editCatIdInput.value = id;
+    editCatFilename.textContent = name;
+    editCatValue.value = category;
+    editCatModal.classList.remove('hidden');
+    editCatValue.focus();
+    editCatValue.select();
+  }
+
+  function closeEditCat() { editCatModal.classList.add('hidden'); editCatForm.reset(); }
+
+  document.getElementById('close-edit-cat')!.addEventListener('click', closeEditCat);
+  document.getElementById('cancel-edit-cat')!.addEventListener('click', closeEditCat);
+  editCatModal.addEventListener('click', e => { if (e.target === editCatModal) closeEditCat(); });
+
+  editCatForm.addEventListener('submit', async e => {
+    e.preventDefault();
+    const id       = editCatIdInput.value;
+    const category = editCatValue.value.trim();
+    if (!category) return;
+
+    setStatus('Saving…', 'text-gray-400');
+    try {
+      const res  = await fetch('/api/documents', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, category, sha: currentSha }),
+      });
+      const data = await res.json() as { ok: boolean; sha?: string; error?: string };
+      if (!res.ok) throw new Error(data.error ?? `HTTP ${res.status}`);
+      if (data.sha) currentSha = data.sha;
+      files = files.map(f => f.id === id ? { ...f, category } : f);
+      setStatus('Saved', 'text-green-600');
+      setTimeout(() => setStatus('', ''), 2000);
+      closeEditCat();
+    } catch (err) {
+      setStatus('Save failed', 'text-red-500');
+      console.error(err);
+    }
+    renderFiles();
+  });
+
+  // ── Upload modal ──────────────────────────────────────────────────────────
+  const uploadModal    = document.getElementById('upload-modal')!;
+  const dropZone       = document.getElementById('drop-zone')!;
+  const fileInput      = document.getElementById('file-input') as HTMLInputElement;
+  const filePreview    = document.getElementById('file-preview')!;
+  const previewName    = document.getElementById('file-preview-name')!;
+  const previewSize    = document.getElementById('file-preview-size')!;
+  const progressWrap   = document.getElementById('upload-progress-wrap')!;
+  const progressBar    = document.getElementById('upload-bar')!;
+  const progressPct    = document.getElementById('upload-pct')!;
+  const uploadSubmit   = document.getElementById('upload-submit') as HTMLButtonElement;
+
+  function openUploadModal() {
+    selectedFile = null;
+    (document.getElementById('upload-form') as HTMLFormElement).reset();
+    filePreview.classList.add('hidden');
+    dropZone.classList.remove('hidden');
+    progressWrap.classList.add('hidden');
+    uploadSubmit.disabled = false;
+    uploadModal.classList.remove('hidden');
+  }
+
+  function closeUploadModal() { uploadModal.classList.add('hidden'); }
+
+  document.getElementById('action-upload')!.addEventListener('click', openUploadModal);
+  document.getElementById('close-upload-modal')!.addEventListener('click', closeUploadModal);
+  uploadModal.addEventListener('click', e => { if (e.target === uploadModal) closeUploadModal(); });
+
+  dropZone.addEventListener('click', () => fileInput.click());
+  dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('border-scout-blue', 'bg-scout-blue-pale'); });
+  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('border-scout-blue', 'bg-scout-blue-pale'));
+  dropZone.addEventListener('drop', e => {
+    e.preventDefault();
+    dropZone.classList.remove('border-scout-blue', 'bg-scout-blue-pale');
+    const f = e.dataTransfer?.files[0];
+    if (f) setSelectedFile(f);
+  });
+  fileInput.addEventListener('change', () => { if (fileInput.files?.[0]) setSelectedFile(fileInput.files[0]); });
+  document.getElementById('clear-file')!.addEventListener('click', e => {
+    e.stopPropagation();
+    selectedFile = null;
+    fileInput.value = '';
+    filePreview.classList.add('hidden');
+    dropZone.classList.remove('hidden');
+  });
+
+  function setSelectedFile(f: File) {
+    selectedFile = f;
+    previewName.textContent = f.name;
+    previewSize.textContent = formatBytes(f.size);
+    dropZone.classList.add('hidden');
+    filePreview.classList.remove('hidden');
+  }
+
+  (document.getElementById('upload-form') as HTMLFormElement).addEventListener('submit', async e => {
+    e.preventDefault();
+    if (!selectedFile) { alert('Please select a file.'); return; }
+    const category = (document.getElementById('upload-category') as HTMLInputElement).value.trim();
+    if (!category) { alert('Please enter a category.'); return; }
+
+    uploadSubmit.disabled = true;
+    progressWrap.classList.remove('hidden');
+    progressBar.style.width = '0%';
+    progressPct.textContent = '0%';
+    setStatus('Uploading…', 'text-gray-400');
+
+    const formData = new FormData();
+    formData.append('file', selectedFile);
+    formData.append('category', category);
+    formData.append('sha', currentSha);
+
+    await new Promise<void>((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', '/api/documents/upload');
+      xhr.upload.addEventListener('progress', ev => {
+        if (ev.lengthComputable) {
+          const pct = Math.round((ev.loaded / ev.total) * 100);
+          progressBar.style.width = `${pct}%`;
+          progressPct.textContent = `${pct}%`;
+        }
+      });
+      xhr.addEventListener('load', () => {
+        try {
+          const data = JSON.parse(xhr.responseText) as { ok: boolean; document?: UploadedFile; sha?: string; error?: string };
+          if (xhr.status >= 400) throw new Error(data.error ?? `HTTP ${xhr.status}`);
+          if (data.document) files.push(data.document);
+          if (data.sha) currentSha = data.sha;
+          progressBar.style.width = '100%';
+          progressPct.textContent = '100%';
+          setStatus('Uploaded', 'text-green-600');
+          setTimeout(() => setStatus('', ''), 2000);
+          renderFiles();
+          closeUploadModal();
+          resolve();
+        } catch (err) { reject(err); }
+      });
+      xhr.addEventListener('error', () => reject(new Error('Network error')));
+      xhr.send(formData);
+    }).catch(err => {
+      console.error('Upload error:', err);
+      setStatus('Upload failed', 'text-red-500');
+      uploadSubmit.disabled = false;
+      progressWrap.classList.add('hidden');
+    });
+  });
+
+  // ── Init: activate tab from hash ──────────────────────────────────────────
+  const initTab = location.hash === '#files' ? TAB_FILES : TAB_GUIDES;
+  activateTab(initTab);
 </script>
