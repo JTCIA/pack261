@@ -133,5 +133,14 @@
     "type": "meeting",
     "description": "7PM",
     "den": "wolf"
+  },
+  {
+    "id": "mme5yf94gss",
+    "date": "2026-05-06",
+    "title": "May Wolf Den Meeting",
+    "location": "St. Ann School Parish Ministry Building",
+    "type": "meeting",
+    "description": "7PM",
+    "den": "wolf"
   }
 ]
