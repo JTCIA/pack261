@@ -7,6 +7,7 @@ type CloudflareEnv = {
   GITHUB_TOKEN: string | undefined;
   GITHUB_CLIENT_ID: string | undefined;
   GITHUB_CLIENT_SECRET: string | undefined;
+  DOCUMENTS: R2Bucket | undefined;
 };
 
 declare namespace App {
