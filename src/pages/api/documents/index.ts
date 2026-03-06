@@ -67,3 +67,49 @@ export async function DELETE({ locals, request }: APIContext) {
   const newSha = refreshed && !isGHError(refreshed) ? refreshed.sha : body.sha;
   return new Response(JSON.stringify({ ok: true, sha: newSha }), { headers: JSON_HEADERS });
 }
+
+/** PATCH: update the category of an uploaded document. */
+export async function PATCH({ locals, request }: APIContext) {
+  const token = locals.runtime.env.GITHUB_TOKEN;
+
+  let body: { id: string; category: string; sha: string };
+  try {
+    body = await request.json() as { id: string; category: string; sha: string };
+  } catch {
+    return new Response(JSON.stringify({ error: 'Invalid JSON body' }), { status: 400, headers: JSON_HEADERS });
+  }
+
+  if (!body.id || !body.sha || typeof body.category !== 'string') {
+    return new Response(JSON.stringify({ error: 'Body must include id, category, and sha' }), { status: 400, headers: JSON_HEADERS });
+  }
+
+  const category = body.category.trim();
+  if (!category) {
+    return new Response(JSON.stringify({ error: 'Category cannot be empty' }), { status: 400, headers: JSON_HEADERS });
+  }
+
+  const current = await getDocuments(token);
+  if (!current) {
+    return new Response(JSON.stringify({ error: 'Network error connecting to GitHub' }), { status: 502, headers: JSON_HEADERS });
+  }
+  if (isGHError(current)) {
+    return new Response(JSON.stringify({ error: current.message }), { status: current.status || 500, headers: JSON_HEADERS });
+  }
+
+  const doc = current.documents.find((d: Document) => d.id === body.id);
+  if (!doc) {
+    return new Response(JSON.stringify({ error: 'Document not found' }), { status: 404, headers: JSON_HEADERS });
+  }
+
+  const updated = current.documents.map((d: Document) =>
+    d.id === body.id ? { ...d, category } : d
+  );
+  const saveResult = await putDocuments(updated, body.sha, `Update category for ${doc.name}`, token);
+  if (!saveResult.ok) {
+    return new Response(JSON.stringify({ error: saveResult.error ?? 'GitHub API error' }), { status: 500, headers: JSON_HEADERS });
+  }
+
+  const refreshed = await getDocuments(token);
+  const newSha = refreshed && !isGHError(refreshed) ? refreshed.sha : body.sha;
+  return new Response(JSON.stringify({ ok: true, sha: newSha }), { headers: JSON_HEADERS });
+}
