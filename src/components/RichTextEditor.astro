@@ -1,0 +1,167 @@
+---
+/**
+ * RichTextEditor — drop-in replacement for body/description textareas.
+ *
+ * Renders a Rich text / Markdown toggle above the field.
+ * - Rich text mode: loads EasyMDE (CDN, on-demand) and shows a formatting toolbar.
+ * - Markdown mode:  raw monospace textarea with a syntax hint.
+ *
+ * EasyMDE keeps the underlying <textarea> in sync, so form submission works
+ * without any special handling.
+ *
+ * The user's last-used mode is remembered in localStorage across all editors.
+ */
+interface Props {
+  name: string;
+  required?: boolean;
+  rows?: number;
+  value?: string;
+  placeholder?: string;
+}
+
+const { name, required = false, rows = 12, value = '', placeholder = '' } = Astro.props;
+---
+
+<div class="rte-root">
+  <!-- Toggle bar -->
+  <div class="flex items-center gap-3 mb-1.5">
+    <div class="inline-flex text-xs rounded-md border border-gray-200 overflow-hidden divide-x divide-gray-200">
+      <button type="button" class="rte-mode-btn px-2.5 py-1 font-medium transition-colors" data-mode="rich">
+        Rich text
+      </button>
+      <button type="button" class="rte-mode-btn px-2.5 py-1 font-medium transition-colors" data-mode="markdown">
+        Markdown
+      </button>
+    </div>
+    <span class="rte-md-hint text-xs text-gray-400">
+      **bold**, *italic*, ## Heading, - list, [link](url)
+    </span>
+  </div>
+
+  <!-- Underlying textarea — EasyMDE syncs to this automatically -->
+  <textarea
+    name={name}
+    required={required || undefined}
+    rows={rows}
+    placeholder={placeholder}
+    class="rte-textarea w-full border border-gray-200 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-scout-blue resize-y"
+  >{value}</textarea>
+</div>
+
+<!-- EasyMDE cosmetic overrides (scoped via class selectors, no conflict) -->
+<style is:global>
+  .EasyMDEContainer .editor-toolbar {
+    border: 1px solid #e5e7eb;
+    border-bottom: none;
+    border-radius: 0.5rem 0.5rem 0 0;
+    background: #f9fafb;
+    padding: 4px 6px;
+  }
+  .EasyMDEContainer .editor-toolbar button { color: #4b5563; border: 1px solid transparent; }
+  .EasyMDEContainer .editor-toolbar button:hover,
+  .EasyMDEContainer .editor-toolbar button.active { background: #e8f0fb; color: #1a5ba8; border-color: transparent; }
+  .EasyMDEContainer .editor-toolbar i.separator { border-color: #e5e7eb; }
+  .EasyMDEContainer .CodeMirror {
+    border: 1px solid #e5e7eb;
+    border-radius: 0 0 0.5rem 0.5rem;
+    font-size: 0.875rem;
+    padding: 4px 12px;
+    font-family: ui-monospace, 'Cascadia Code', Menlo, Consolas, monospace;
+  }
+  .EasyMDEContainer .CodeMirror-focused { box-shadow: 0 0 0 2px rgba(0,63,135,0.25); border-color: #003F87; }
+  .EasyMDEContainer .editor-preview,
+  .EasyMDEContainer .editor-preview-side { font-size: 0.875rem; padding: 12px 16px; }
+</style>
+
+<script>
+  const STORAGE_KEY = 'pack261-rte-mode';
+  const EASYMDE_CSS = 'https://unpkg.com/easymde@2.18.0/dist/easymde.min.css';
+  const EASYMDE_JS  = 'https://unpkg.com/easymde@2.18.0/dist/easymde.min.js';
+
+  // Load EasyMDE from CDN once, regardless of how many editors are on the page.
+  let mdeLoadPromise: Promise<void> | null = null;
+  function loadEasyMDE(): Promise<void> {
+    if ((window as any).EasyMDE) return Promise.resolve();
+    if (mdeLoadPromise) return mdeLoadPromise;
+    mdeLoadPromise = new Promise<void>((resolve, reject) => {
+      const link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = EASYMDE_CSS;
+      document.head.appendChild(link);
+
+      const script = document.createElement('script');
+      script.src = EASYMDE_JS;
+      script.onload = () => resolve();
+      script.onerror = () => reject(new Error('Failed to load EasyMDE'));
+      document.head.appendChild(script);
+    });
+    return mdeLoadPromise;
+  }
+
+  function savedMode(): 'rich' | 'markdown' {
+    try { return (localStorage.getItem(STORAGE_KEY) as 'rich' | 'markdown') ?? 'rich'; }
+    catch { return 'rich'; }
+  }
+
+  document.querySelectorAll<HTMLElement>('.rte-root').forEach(async (root) => {
+    const textarea = root.querySelector<HTMLTextAreaElement>('.rte-textarea')!;
+    const richBtn  = root.querySelector<HTMLButtonElement>('[data-mode="rich"]')!;
+    const mdBtn    = root.querySelector<HTMLButtonElement>('[data-mode="markdown"]')!;
+    const mdHint   = root.querySelector<HTMLElement>('.rte-md-hint')!;
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let mde: any = null;
+
+    function setToggleUI(mode: 'rich' | 'markdown') {
+      const activeClass   = 'bg-scout-blue text-white';
+      const inactiveClass = 'text-gray-500 hover:bg-gray-100';
+      richBtn.className = `rte-mode-btn px-2.5 py-1 font-medium transition-colors ${mode === 'rich' ? activeClass : inactiveClass}`;
+      mdBtn.className   = `rte-mode-btn px-2.5 py-1 font-medium transition-colors ${mode === 'markdown' ? activeClass : inactiveClass}`;
+      mdHint.classList.toggle('hidden', mode === 'rich');
+    }
+
+    async function switchToRich() {
+      if (mde) return;
+      richBtn.textContent = 'Loading…';
+      richBtn.disabled = true;
+      try {
+        await loadEasyMDE();
+        mde = new (window as any).EasyMDE({
+          element: textarea,
+          toolbar: [
+            'bold', 'italic', 'strikethrough', '|',
+            'heading-2', 'heading-3', '|',
+            'unordered-list', 'ordered-list', '|',
+            'link', 'horizontal-rule', '|',
+            'preview', 'side-by-side',
+          ],
+          spellChecker: false,
+          status: false,
+          autofocus: false,
+          minHeight: `${Math.max(120, textarea.rows * 26)}px`,
+        });
+      } finally {
+        richBtn.textContent = 'Rich text';
+        richBtn.disabled = false;
+      }
+      setToggleUI('rich');
+      try { localStorage.setItem(STORAGE_KEY, 'rich'); } catch { /* ignore */ }
+    }
+
+    function switchToMarkdown() {
+      if (mde) { mde.toTextArea(); mde = null; }
+      setToggleUI('markdown');
+      try { localStorage.setItem(STORAGE_KEY, 'markdown'); } catch { /* ignore */ }
+    }
+
+    richBtn.addEventListener('click', switchToRich);
+    mdBtn.addEventListener('click', switchToMarkdown);
+
+    // Initialise from saved preference
+    if (savedMode() === 'rich') {
+      await switchToRich();
+    } else {
+      switchToMarkdown();
+    }
+  });
+</script>
