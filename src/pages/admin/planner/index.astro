@@ -11,37 +11,33 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
     <div class="flex items-center gap-3">
       <span id="save-status" class="text-xs text-gray-400"></span>
       <div class="flex items-center gap-2">
-      <button id="add-task-btn" class="flex items-center gap-1.5 text-sm bg-scout-blue text-white px-3 py-1.5 rounded-lg hover:bg-scout-blue-mid transition-colors">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-        </svg>
-        Add Task
-      </button>
-      <button id="clear-done-btn" class="flex items-center gap-1.5 text-sm bg-white border border-gray-200 text-gray-600 px-3 py-1.5 rounded-lg hover:bg-gray-50 transition-colors">
-        Clear Done
-      </button>
+        <button id="add-task-btn" class="flex items-center gap-1.5 text-sm bg-scout-blue text-white px-3 py-1.5 rounded-lg hover:bg-scout-blue-mid transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+          </svg>
+          Add Task
+        </button>
+        <button id="clear-done-btn" class="flex items-center gap-1.5 text-sm bg-white border border-gray-200 text-gray-600 px-3 py-1.5 rounded-lg hover:bg-gray-50 transition-colors">
+          Clear Done
+        </button>
       </div>
     </div>
   </div>
 
   <!-- Category filter -->
   <div class="flex gap-2 mb-5 overflow-x-auto pb-1">
-    <button data-cat="all" class="cat-filter flex-shrink-0 px-3 py-1 rounded-full text-xs font-medium bg-scout-blue text-white border border-scout-blue transition-colors">
-      All
-    </button>
+    <button data-cat="all" class="cat-filter flex-shrink-0 px-3 py-1 rounded-full text-xs font-medium bg-scout-blue text-white border border-scout-blue transition-colors">All</button>
     {['events', 'fundraising', 'advancement', 'camping', 'recruitment', 'admin'].map(cat => (
-      <button data-cat={cat} class="cat-filter flex-shrink-0 px-3 py-1 rounded-full text-xs font-medium bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 capitalize transition-colors">
-        {cat}
-      </button>
+      <button data-cat={cat} class="cat-filter flex-shrink-0 px-3 py-1 rounded-full text-xs font-medium bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 capitalize transition-colors">{cat}</button>
     ))}
   </div>
 
   <!-- Kanban board -->
   <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
     {[
-      { id: 'backlog', label: 'Backlog', color: 'border-gray-300', headerBg: 'bg-gray-100', count: 'bg-gray-200 text-gray-700' },
-      { id: 'in-progress', label: 'In Progress', color: 'border-scout-blue', headerBg: 'bg-scout-blue-pale', count: 'bg-scout-blue text-white' },
-      { id: 'done', label: 'Done', color: 'border-green-300', headerBg: 'bg-green-50', count: 'bg-green-500 text-white' },
+      { id: 'backlog',     label: 'Backlog',      color: 'border-gray-300',     headerBg: 'bg-gray-100',        count: 'bg-gray-200 text-gray-700' },
+      { id: 'in-progress', label: 'In Progress',  color: 'border-scout-blue',   headerBg: 'bg-scout-blue-pale', count: 'bg-scout-blue text-white' },
+      { id: 'done',        label: 'Done',         color: 'border-green-300',    headerBg: 'bg-green-50',        count: 'bg-green-500 text-white' },
     ].map(({ id, label, color, headerBg, count }) => (
       <div class="flex flex-col">
         <div class={`flex items-center justify-between px-3 py-2 rounded-t-xl border border-b-0 ${color} ${headerBg}`}>
@@ -62,10 +58,10 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
     ))}
   </div>
 
-  <!-- Add task modal -->
+  <!-- Task modal -->
   <div id="task-modal" class="hidden fixed inset-0 bg-black bg-opacity-40 z-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-xl shadow-xl w-full max-w-md">
-      <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+    <div class="bg-white rounded-xl shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100 sticky top-0 bg-white z-10">
         <h3 class="font-semibold text-gray-900" id="modal-title">Add Task</h3>
         <button id="close-modal" class="text-gray-400 hover:text-gray-600">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -75,15 +71,26 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
       </div>
       <form id="task-form" class="p-5 space-y-4">
         <input type="hidden" id="task-id" />
+
+        <!-- Parent task picker -->
+        <div id="parent-field">
+          <label class="block text-sm font-medium text-gray-700 mb-1">Part of (parent task)</label>
+          <select id="task-parent"
+            class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-scout-blue">
+            <option value="">— None (top-level task) —</option>
+          </select>
+          <p id="parent-locked-msg" class="hidden text-xs text-gray-400 mt-1">This task has subtasks and can't itself be a subtask.</p>
+        </div>
+
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">Title <span class="text-red-400">*</span></label>
           <input type="text" id="task-title" required
             class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-scout-blue"
-            placeholder="e.g. Plan Blue & Gold Banquet" />
+            placeholder="e.g. Book venue" />
         </div>
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
-          <textarea id="task-desc" rows="3"
+          <textarea id="task-desc" rows="2"
             class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-scout-blue resize-none"
             placeholder="Optional details..."></textarea>
         </div>
@@ -122,7 +129,7 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
             class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-scout-blue" />
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Column</label>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
           <select id="task-col"
             class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-scout-blue">
             <option value="backlog">Backlog</option>
@@ -130,6 +137,22 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
             <option value="done">Done</option>
           </select>
         </div>
+
+        <!-- Subtasks section (shown when editing a parent task) -->
+        <div id="subtasks-section" class="hidden border-t border-gray-100 pt-4">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-sm font-medium text-gray-700">Subtasks</span>
+            <button type="button" id="add-subtask-btn"
+              class="text-xs text-scout-blue hover:text-scout-blue-mid font-medium flex items-center gap-1">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+              </svg>
+              Add subtask
+            </button>
+          </div>
+          <div id="modal-subtask-list" class="space-y-1"></div>
+        </div>
+
         <div class="flex gap-2 pt-1">
           <button type="submit" class="flex-1 bg-scout-blue text-white py-2 rounded-lg text-sm font-semibold hover:bg-scout-blue-mid transition-colors">
             Save Task
@@ -155,6 +178,7 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
     due: string;
     col: string;
     createdAt: number;
+    parentId?: string;
   }
 
   const catColors: Record<string, string> = {
@@ -172,20 +196,47 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
     low: 'bg-green-400',
   };
 
+  const colLabel: Record<string, string> = {
+    'backlog': 'Backlog',
+    'in-progress': 'In Progress',
+    'done': 'Done',
+  };
+
+  const subStatusDot: Record<string, string> = {
+    'backlog': 'bg-gray-300',
+    'in-progress': 'bg-scout-blue',
+    'done': 'bg-green-400',
+  };
+
   let tasks: Task[] = [];
   let currentSha = '';
   let activeFilter = 'all';
   let editingId: string | null = null;
   let saveTimer: ReturnType<typeof setTimeout> | null = null;
 
-  // ── Status indicator ────────────────────────────────────────────────────────
+  // ── Helpers ──────────────────────────────────────────────────────────────────
   const statusEl = document.getElementById('save-status')!;
   function setStatus(text: string, color: string) {
     statusEl.textContent = text;
     statusEl.className = `text-xs ${color} transition-opacity`;
   }
 
-  // ── API helpers ─────────────────────────────────────────────────────────────
+  function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2); }
+
+  function esc(str: string) {
+    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function formatDue(dateStr: string) {
+    if (!dateStr) return '';
+    const d = new Date(dateStr + 'T12:00:00');
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  }
+
+  function parentTasks(): Task[] { return tasks.filter(t => !t.parentId); }
+  function subtasksOf(parentId: string): Task[] { return tasks.filter(t => t.parentId === parentId); }
+
+  // ── API ───────────────────────────────────────────────────────────────────────
   async function loadTasks() {
     setStatus('Loading…', 'text-gray-400');
     try {
@@ -221,61 +272,103 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
     }
   }
 
-  // Debounce saves slightly so rapid drags don't fire simultaneous requests
   function save() {
     if (saveTimer) clearTimeout(saveTimer);
     saveTimer = setTimeout(saveTasks, 300);
   }
 
-  function uid() {
-    return Date.now().toString(36) + Math.random().toString(36).slice(2);
-  }
-
-  function formatDue(dateStr: string) {
-    if (!dateStr) return '';
-    const d = new Date(dateStr + 'T12:00:00');
-    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-  }
-
+  // ── Render ────────────────────────────────────────────────────────────────────
   function renderBoard() {
-    const cols = ['backlog', 'in-progress', 'done'];
-    cols.forEach(colId => {
+    ['backlog', 'in-progress', 'done'].forEach(colId => {
       const el = document.getElementById(`col-${colId}`);
       if (!el) return;
-      const filtered = tasks.filter(t => t.col === colId && (activeFilter === 'all' || t.category === activeFilter));
-      const count = document.getElementById(`count-${colId}`);
-      if (count) count.textContent = String(filtered.length);
 
-      // Clear children except empty-hint
-      Array.from(el.children).forEach(child => {
-        if (!child.classList.contains('empty-hint')) child.remove();
-      });
+      const visible = parentTasks().filter(t =>
+        t.col === colId && (activeFilter === 'all' || t.category === activeFilter)
+      );
 
-      const hint = el.querySelector('.empty-hint') as HTMLElement;
-      if (hint) hint.style.display = filtered.length ? 'none' : '';
+      const countEl = document.getElementById(`count-${colId}`);
+      if (countEl) countEl.textContent = String(visible.length);
 
-      filtered.forEach(task => {
+      Array.from(el.children).forEach(c => { if (!c.classList.contains('empty-hint')) c.remove(); });
+      const hint = el.querySelector<HTMLElement>('.empty-hint')!;
+      hint.style.display = visible.length ? 'none' : '';
+
+      visible.forEach(task => {
+        const subs = subtasksOf(task.id);
+        const doneSubs = subs.filter(s => s.col === 'done').length;
+        const isOverdue = task.due && new Date(task.due + 'T23:59:59') < new Date();
+
         const card = document.createElement('div');
-        card.className = 'task-card bg-white border border-gray-200 rounded-lg p-3 shadow-sm cursor-pointer hover:shadow-md transition-shadow';
+        card.className = 'task-card bg-white border border-gray-200 rounded-lg shadow-sm cursor-pointer hover:shadow-md transition-shadow';
         card.draggable = true;
         card.dataset.id = task.id;
 
-        const isOverdue = task.due && new Date(task.due + 'T23:59:59') < new Date();
+        // Progress bar for subtasks
+        const progressHtml = subs.length > 0 ? `
+          <div class="flex items-center gap-2 mt-2 mb-1 px-3">
+            <div class="flex-1 bg-gray-100 rounded-full h-1.5 overflow-hidden">
+              <div class="bg-green-400 h-1.5 rounded-full transition-all" style="width:${Math.round(doneSubs/subs.length*100)}%"></div>
+            </div>
+            <span class="text-xs text-gray-400 flex-shrink-0">${doneSubs}/${subs.length}</span>
+          </div>` : '';
+
+        // Subtask rows
+        const subRowsHtml = subs.map(sub => `
+          <div class="subtask-row flex items-center gap-2 px-3 py-1.5 hover:bg-gray-50 cursor-pointer" data-id="${sub.id}">
+            <div class="w-2 h-2 rounded-full flex-shrink-0 ${subStatusDot[sub.col] ?? 'bg-gray-300'}"></div>
+            <span class="text-xs text-gray-700 flex-1 truncate ${sub.col === 'done' ? 'line-through text-gray-400' : ''}">${esc(sub.title)}</span>
+            ${sub.assignee ? `<span class="text-xs text-gray-400 flex-shrink-0">@${esc(sub.assignee)}</span>` : ''}
+          </div>`).join('');
 
         card.innerHTML = `
-          <div class="flex items-start gap-2 mb-2">
-            <div class="w-2 h-2 rounded-full flex-shrink-0 mt-1.5 ${priorityDot[task.priority] ?? 'bg-gray-300'}"></div>
-            <p class="text-sm font-medium text-gray-900 leading-snug flex-1">${escapeHtml(task.title)}</p>
+          <div class="p-3">
+            <div class="flex items-start gap-2 mb-1.5">
+              <div class="w-2 h-2 rounded-full flex-shrink-0 mt-1.5 ${priorityDot[task.priority] ?? 'bg-gray-300'}"></div>
+              <p class="text-sm font-medium text-gray-900 leading-snug flex-1">${esc(task.title)}</p>
+            </div>
+            ${task.desc ? `<p class="text-xs text-gray-500 mb-1.5 pl-4 line-clamp-2">${esc(task.desc)}</p>` : ''}
+            <div class="flex items-center gap-1.5 flex-wrap pl-4">
+              <span class="text-xs px-1.5 py-0.5 rounded-full capitalize ${catColors[task.category] ?? 'bg-gray-100 text-gray-600'}">${task.category}</span>
+              ${task.assignee ? `<span class="text-xs text-gray-400">@${esc(task.assignee)}</span>` : ''}
+              ${task.due ? `<span class="text-xs ml-auto ${isOverdue && colId !== 'done' ? 'text-red-500 font-medium' : 'text-gray-400'}">${isOverdue && colId !== 'done' ? '⚠ ' : ''}${formatDue(task.due)}</span>` : ''}
+            </div>
           </div>
-          ${task.desc ? `<p class="text-xs text-gray-500 mb-2 pl-4 line-clamp-2">${escapeHtml(task.desc)}</p>` : ''}
-          <div class="flex items-center gap-1.5 flex-wrap pl-4">
-            <span class="text-xs px-1.5 py-0.5 rounded-full capitalize ${catColors[task.category] ?? 'bg-gray-100 text-gray-600'}">${task.category}</span>
-            ${task.assignee ? `<span class="text-xs text-gray-400">@${escapeHtml(task.assignee)}</span>` : ''}
-            ${task.due ? `<span class="text-xs ml-auto ${isOverdue && colId !== 'done' ? 'text-red-500 font-medium' : 'text-gray-400'}">${isOverdue && colId !== 'done' ? '⚠ ' : ''}${formatDue(task.due)}</span>` : ''}
-          </div>
+          ${progressHtml}
+          ${subs.length > 0 ? `
+          <div class="subtask-panel border-t border-gray-100">
+            <button type="button" class="subtask-toggle w-full flex items-center justify-between px-3 py-1.5 text-xs text-gray-400 hover:text-gray-600 hover:bg-gray-50 transition-colors" data-parent-id="${task.id}">
+              <span class="subtask-toggle-label">${subs.length} subtask${subs.length !== 1 ? 's' : ''}</span>
+              <svg class="subtask-chevron w-3.5 h-3.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+              </svg>
+            </button>
+            <div class="subtask-rows hidden pb-1">${subRowsHtml}</div>
+          </div>` : ''}
         `;
 
-        card.addEventListener('click', () => openEdit(task));
+        // Click on card body → edit parent
+        card.querySelector<HTMLElement>('.p-3')?.addEventListener('click', () => openEdit(task));
+        if (progressHtml) card.querySelector<HTMLElement>('.flex.items-center.gap-2.mt-2')?.addEventListener('click', () => openEdit(task));
+
+        // Toggle subtask panel
+        card.querySelector<HTMLButtonElement>('.subtask-toggle')?.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const rows = card.querySelector<HTMLElement>('.subtask-rows')!;
+          const chevron = card.querySelector<HTMLElement>('.subtask-chevron')!;
+          rows.classList.toggle('hidden');
+          chevron.style.transform = rows.classList.contains('hidden') ? '' : 'rotate(180deg)';
+        });
+
+        // Click subtask row → edit subtask
+        card.querySelectorAll<HTMLElement>('.subtask-row').forEach(row => {
+          row.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const sub = tasks.find(t => t.id === row.dataset.id);
+            if (sub) openEdit(sub);
+          });
+        });
+
         card.addEventListener('dragstart', (e) => {
           if (e.dataTransfer) e.dataTransfer.setData('text/plain', task.id);
         });
@@ -285,38 +378,104 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
     });
   }
 
-  function escapeHtml(str: string) {
-    return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  // ── Modal ─────────────────────────────────────────────────────────────────────
+  const modal          = document.getElementById('task-modal')!;
+  const form           = document.getElementById('task-form') as HTMLFormElement;
+  const addBtn         = document.getElementById('add-task-btn')!;
+  const closeBtn       = document.getElementById('close-modal')!;
+  const deleteBtn      = document.getElementById('delete-task-btn')!;
+  const modalTitle     = document.getElementById('modal-title')!;
+  const subtasksSection = document.getElementById('subtasks-section')!;
+  const modalSubList   = document.getElementById('modal-subtask-list')!;
+  const addSubBtn      = document.getElementById('add-subtask-btn')!;
+  const parentSelect   = document.getElementById('task-parent') as HTMLSelectElement;
+  const parentLockedMsg = document.getElementById('parent-locked-msg')!;
+
+  function populateParentDropdown(excludeId?: string) {
+    const options = parentTasks().filter(t => t.id !== excludeId);
+    // Keep "none" option, replace the rest
+    while (parentSelect.options.length > 1) parentSelect.remove(1);
+    options.forEach(t => {
+      const opt = document.createElement('option');
+      opt.value = t.id;
+      opt.textContent = t.title;
+      parentSelect.appendChild(opt);
+    });
   }
 
-  // Modal handling
-  const modal = document.getElementById('task-modal')!;
-  const form = document.getElementById('task-form') as HTMLFormElement;
-  const addBtn = document.getElementById('add-task-btn')!;
-  const closeBtn = document.getElementById('close-modal')!;
-  const deleteBtn = document.getElementById('delete-task-btn')!;
-  const modalTitle = document.getElementById('modal-title')!;
+  function renderModalSubtasks(parentId: string) {
+    const subs = subtasksOf(parentId);
+    if (subs.length === 0) {
+      modalSubList.innerHTML = '<p class="text-xs text-gray-400">No subtasks yet.</p>';
+      return;
+    }
+    modalSubList.innerHTML = subs.map(sub => `
+      <div class="flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-100 hover:bg-gray-50 cursor-pointer modal-subtask-row" data-id="${sub.id}">
+        <div class="w-2 h-2 rounded-full flex-shrink-0 ${subStatusDot[sub.col] ?? 'bg-gray-300'}"></div>
+        <span class="text-xs text-gray-800 flex-1 truncate ${sub.col === 'done' ? 'line-through text-gray-400' : ''}">${esc(sub.title)}</span>
+        <span class="text-xs text-gray-400 flex-shrink-0">${colLabel[sub.col] ?? sub.col}</span>
+        ${sub.assignee ? `<span class="text-xs text-gray-400 flex-shrink-0">@${esc(sub.assignee)}</span>` : ''}
+      </div>`).join('');
 
-  function openAdd() {
+    modalSubList.querySelectorAll<HTMLElement>('.modal-subtask-row').forEach(row => {
+      row.addEventListener('click', () => {
+        const sub = tasks.find(t => t.id === row.dataset.id);
+        if (sub) { closeModal(); setTimeout(() => openEdit(sub), 50); }
+      });
+    });
+  }
+
+  function openAdd(presetParentId?: string) {
     editingId = null;
-    modalTitle.textContent = 'Add Task';
+    modalTitle.textContent = presetParentId ? 'Add Subtask' : 'Add Task';
     form.reset();
     deleteBtn.classList.add('hidden');
+    subtasksSection.classList.add('hidden');
+
+    populateParentDropdown();
+    parentSelect.value = presetParentId ?? '';
+    parentSelect.disabled = !!presetParentId;
+    parentLockedMsg.classList.add('hidden');
+
     modal.classList.remove('hidden');
     (document.getElementById('task-title') as HTMLInputElement).focus();
   }
 
   function openEdit(task: Task) {
     editingId = task.id;
-    modalTitle.textContent = 'Edit Task';
-    (document.getElementById('task-id') as HTMLInputElement).value = task.id;
-    (document.getElementById('task-title') as HTMLInputElement).value = task.title;
-    (document.getElementById('task-desc') as HTMLTextAreaElement).value = task.desc;
+    const hasSubs = subtasksOf(task.id).length > 0;
+    const isSubtask = !!task.parentId;
+
+    modalTitle.textContent = isSubtask ? 'Edit Subtask' : 'Edit Task';
+
+    (document.getElementById('task-id')       as HTMLInputElement).value  = task.id;
+    (document.getElementById('task-title')    as HTMLInputElement).value  = task.title;
+    (document.getElementById('task-desc')     as HTMLTextAreaElement).value = task.desc;
     (document.getElementById('task-category') as HTMLSelectElement).value = task.category;
     (document.getElementById('task-priority') as HTMLSelectElement).value = task.priority;
-    (document.getElementById('task-assignee') as HTMLInputElement).value = task.assignee;
-    (document.getElementById('task-due') as HTMLInputElement).value = task.due;
-    (document.getElementById('task-col') as HTMLSelectElement).value = task.col;
+    (document.getElementById('task-assignee') as HTMLInputElement).value  = task.assignee;
+    (document.getElementById('task-due')      as HTMLInputElement).value  = task.due;
+    (document.getElementById('task-col')      as HTMLSelectElement).value = task.col;
+
+    // Parent dropdown
+    populateParentDropdown(task.id);
+    parentSelect.value = task.parentId ?? '';
+    if (hasSubs) {
+      parentSelect.disabled = true;
+      parentLockedMsg.classList.remove('hidden');
+    } else {
+      parentSelect.disabled = false;
+      parentLockedMsg.classList.add('hidden');
+    }
+
+    // Subtasks section (only for parent tasks)
+    if (!isSubtask) {
+      subtasksSection.classList.remove('hidden');
+      renderModalSubtasks(task.id);
+    } else {
+      subtasksSection.classList.add('hidden');
+    }
+
     deleteBtn.classList.remove('hidden');
     modal.classList.remove('hidden');
   }
@@ -325,24 +484,34 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
     modal.classList.add('hidden');
     form.reset();
     editingId = null;
+    parentSelect.disabled = false;
+    parentLockedMsg.classList.add('hidden');
   }
 
-  addBtn.addEventListener('click', openAdd);
+  addBtn.addEventListener('click', () => openAdd());
   closeBtn.addEventListener('click', closeModal);
   modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
 
+  addSubBtn.addEventListener('click', () => {
+    const currentParentId = editingId ?? undefined;
+    closeModal();
+    setTimeout(() => openAdd(currentParentId), 50);
+  });
+
   form.addEventListener('submit', (e) => {
     e.preventDefault();
+    const parentId = parentSelect.value || undefined;
     const task: Task = {
       id: editingId ?? uid(),
-      title: (document.getElementById('task-title') as HTMLInputElement).value,
-      desc: (document.getElementById('task-desc') as HTMLTextAreaElement).value,
+      title:    (document.getElementById('task-title')    as HTMLInputElement).value.trim(),
+      desc:     (document.getElementById('task-desc')     as HTMLTextAreaElement).value.trim(),
       category: (document.getElementById('task-category') as HTMLSelectElement).value,
       priority: (document.getElementById('task-priority') as HTMLSelectElement).value,
-      assignee: (document.getElementById('task-assignee') as HTMLInputElement).value,
-      due: (document.getElementById('task-due') as HTMLInputElement).value,
-      col: (document.getElementById('task-col') as HTMLSelectElement).value,
+      assignee: (document.getElementById('task-assignee') as HTMLInputElement).value.trim(),
+      due:      (document.getElementById('task-due')      as HTMLInputElement).value,
+      col:      (document.getElementById('task-col')      as HTMLSelectElement).value,
       createdAt: editingId ? (tasks.find(t => t.id === editingId)?.createdAt ?? Date.now()) : Date.now(),
+      ...(parentId ? { parentId } : {}),
     };
 
     if (editingId) {
@@ -357,15 +526,21 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
   });
 
   deleteBtn.addEventListener('click', () => {
-    if (editingId && confirm('Delete this task?')) {
-      tasks = tasks.filter(t => t.id !== editingId);
+    if (!editingId) return;
+    const subs = subtasksOf(editingId);
+    const msg = subs.length > 0
+      ? `Delete this task and its ${subs.length} subtask${subs.length !== 1 ? 's' : ''}?`
+      : 'Delete this task?';
+    if (confirm(msg)) {
+      const toDelete = new Set([editingId, ...subs.map(s => s.id)]);
+      tasks = tasks.filter(t => !toDelete.has(t.id));
       save();
       renderBoard();
       closeModal();
     }
   });
 
-  // Drag and drop
+  // ── Drag and drop ─────────────────────────────────────────────────────────────
   (window as any).handleDrop = (e: DragEvent, col: HTMLElement) => {
     e.preventDefault();
     col.classList.remove('bg-blue-50');
@@ -378,34 +553,39 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
     }
   };
 
-  // Category filter
+  // ── Category filter ───────────────────────────────────────────────────────────
   document.querySelectorAll<HTMLButtonElement>('.cat-filter').forEach(btn => {
     btn.addEventListener('click', () => {
       activeFilter = btn.dataset.cat ?? 'all';
       document.querySelectorAll<HTMLButtonElement>('.cat-filter').forEach(b => {
-        const isActive = b.dataset.cat === activeFilter;
-        b.classList.toggle('bg-scout-blue', isActive);
-        b.classList.toggle('text-white', isActive);
-        b.classList.toggle('border-scout-blue', isActive);
-        b.classList.toggle('bg-white', !isActive);
-        b.classList.toggle('text-gray-600', !isActive);
-        b.classList.toggle('border-gray-200', !isActive);
+        const active = b.dataset.cat === activeFilter;
+        b.classList.toggle('bg-scout-blue', active);
+        b.classList.toggle('text-white', active);
+        b.classList.toggle('border-scout-blue', active);
+        b.classList.toggle('bg-white', !active);
+        b.classList.toggle('text-gray-600', !active);
+        b.classList.toggle('border-gray-200', !active);
       });
       renderBoard();
     });
   });
 
-  // Clear done
+  // ── Clear Done ────────────────────────────────────────────────────────────────
   document.getElementById('clear-done-btn')?.addEventListener('click', () => {
-    const doneTasks = tasks.filter(t => t.col === 'done');
+    const doneTasks = parentTasks().filter(t => t.col === 'done');
     if (doneTasks.length === 0) return;
-    if (confirm(`Remove ${doneTasks.length} completed task(s)?`)) {
-      tasks = tasks.filter(t => t.col !== 'done');
+    const doneIds = new Set(doneTasks.map(t => t.id));
+    const orphanedSubs = tasks.filter(t => t.parentId && doneIds.has(t.parentId));
+    const subCount = orphanedSubs.length;
+    const msg = subCount > 0
+      ? `Remove ${doneTasks.length} completed task(s) and their ${subCount} subtask(s)?`
+      : `Remove ${doneTasks.length} completed task(s)?`;
+    if (confirm(msg)) {
+      tasks = tasks.filter(t => !doneIds.has(t.id) && !(t.parentId && doneIds.has(t.parentId)));
       save();
       renderBoard();
     }
   });
 
-  // Load tasks from GitHub on page load
   loadTasks();
 </script>
