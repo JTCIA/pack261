@@ -589,6 +589,8 @@ function formatDate(date?: Date) {
     progressWrap.classList.add('hidden');
     uploadSubmit.disabled = false;
     uploadModal.classList.remove('hidden');
+    // Ensure SHA is loaded even if the Files tab hasn't been visited yet
+    if (!filesLoaded) loadFiles();
   }
 
   function closeUploadModal() { uploadModal.classList.add('hidden'); }
@@ -634,6 +636,17 @@ function formatDate(date?: Date) {
     progressBar.style.width = '0%';
     progressPct.textContent = '0%';
     setStatus('Uploading…', 'text-gray-400');
+
+    // If the Files tab was never visited, currentSha may still be empty — wait for it
+    if (!currentSha) {
+      setStatus('Loading…', 'text-gray-400');
+      await loadFiles();
+    }
+    if (!currentSha) {
+      setStatus('Could not load document list. Please refresh and try again.', 'text-red-500');
+      uploadSubmit.disabled = false;
+      return;
+    }
 
     const formData = new FormData();
     formData.append('file', selectedFile);
