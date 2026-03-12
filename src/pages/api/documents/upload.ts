@@ -22,7 +22,7 @@ const ALLOWED_TYPES = new Set([
   'text/csv',
 ]);
 
-const MAX_SIZE = 50 * 1024 * 1024; // 50 MB
+const MAX_SIZE = 100 * 1024 * 1024; // 100 MB
 
 function sanitizeFilename(name: string): string {
   return name.replace(/[^a-zA-Z0-9._-]/g, '_').slice(0, 200);
