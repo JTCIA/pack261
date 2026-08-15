@@ -1,1 +1,155 @@
-[]
+[
+  {
+    "id": "msuyor9w7k1",
+    "date": "2026-08-19",
+    "title": "New Parent Orientation",
+    "location": "SAS Cafeteria",
+    "type": "special",
+    "description": "",
+    "den": ""
+  },
+  {
+    "id": "msuyor9w2g4",
+    "date": "2026-08-22",
+    "title": "Popcorn Show and Sale",
+    "location": "Lowe's, Robert's, and Patio Drugs",
+    "type": "event",
+    "description": "Use the sign up genius form to sign up for a shift.",
+    "den": ""
+  },
+  {
+    "id": "msuyor9wng6",
+    "date": "2026-08-23",
+    "title": "Popcorn Show and Sale",
+    "location": "Lowe's and Robert's",
+    "type": "event",
+    "description": "Use sign up genius to sign up for a shift",
+    "den": ""
+  },
+  {
+    "id": "msuyor9wqii",
+    "date": "2026-08-26",
+    "title": "Pack Meeting",
+    "location": "SAS Cafeteria",
+    "type": "meeting",
+    "description": "",
+    "den": ""
+  },
+  {
+    "id": "msuyor9wgdu",
+    "date": "2026-09-06",
+    "title": "Scout Mass",
+    "location": "St. Ann Church",
+    "type": "event",
+    "description": "Wear Class A uniform",
+    "den": ""
+  },
+  {
+    "id": "msuyor9wux8",
+    "date": "2026-09-12",
+    "title": "Field Day",
+    "location": "Pontiff Playground - Shelter 5",
+    "type": "event",
+    "description": "9:30 - 12:30",
+    "den": ""
+  },
+  {
+    "id": "msuyor9wuek",
+    "date": "2026-09-17",
+    "title": "Pack Meeting",
+    "location": "SAS",
+    "type": "meeting",
+    "description": "6:30 - 8:30",
+    "den": ""
+  },
+  {
+    "id": "msuyor9w7x9",
+    "date": "2026-10-04",
+    "title": "Scout Mass",
+    "location": "St. Ann Church",
+    "type": "event",
+    "description": "9:30 mass.  Wear Class A uniform.",
+    "den": ""
+  },
+  {
+    "id": "msuyor9wpb0",
+    "date": "2026-10-14",
+    "title": "Pack Meeting / Trunk or Treat",
+    "location": "SAS Cafeteria",
+    "type": "meeting",
+    "description": "6:30 - 8:30.  Decorate your trunk.",
+    "den": ""
+  },
+  {
+    "id": "msuyor9wl77",
+    "date": "2026-10-17",
+    "title": "USS Alabama Overnighter",
+    "location": "Mobile, AL",
+    "type": "camping",
+    "description": "check in at 4:00",
+    "den": ""
+  },
+  {
+    "id": "msuyor9wfyg",
+    "date": "2026-10-18",
+    "title": "USS Alabama Overnighter",
+    "location": "Mobile, AL",
+    "type": "camping",
+    "description": "",
+    "den": ""
+  },
+  {
+    "id": "msuyor9wvm9",
+    "date": "2026-10-20",
+    "title": "Popcorn Order Forms Due",
+    "location": "",
+    "type": "deadline",
+    "description": "",
+    "den": ""
+  },
+  {
+    "id": "msuyor9w9dk",
+    "date": "2026-11-01",
+    "title": "Scout Mass",
+    "location": "St. Ann Church",
+    "type": "event",
+    "description": "9:30 Mass.  Wear Class A uniform.",
+    "den": ""
+  },
+  {
+    "id": "msuyor9wv8q",
+    "date": "2026-11-18",
+    "title": "Pack Meeting",
+    "location": "SAS Cafeteria",
+    "type": "meeting",
+    "description": "6:30 - 8:30",
+    "den": ""
+  },
+  {
+    "id": "msuyor9w0zc",
+    "date": "2026-11-20",
+    "title": "Fall Camping Trip",
+    "location": "Bogue Chitto State Park",
+    "type": "camping",
+    "description": "",
+    "den": ""
+  },
+  {
+    "id": "msuyor9wk89",
+    "date": "2026-11-21",
+    "title": "Fall Camping Trip",
+    "location": "Bogue Chitto State Park",
+    "type": "camping",
+    "description": "",
+    "den": ""
+  },
+  {
+    "id": "msuyor9wrz9",
+    "date": "2026-11-22",
+    "title": "Fall Camping Trip",
+    "location": "Bogue Chitto State Park",
+    "type": "camping",
+    "description": "",
+    "den": ""
+  }
+]
